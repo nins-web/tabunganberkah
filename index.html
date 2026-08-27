@@ -215,7 +215,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
           <div class="bg-white border border-[#E9E9E7] p-5 rounded-lg shadow-sm flex flex-col justify-center">
             <p class="text-xs font-medium uppercase tracking-wider text-[#787774]">Total Anggota</p>
-            <h3 class="text-2xl font-bold text-[#37352F] mt-1" id="kpi-total-anggota">13 Orang</h3>
+            <h3 class="text-2xl font-bold text-[#37352F] mt-1" id="kpi-total-anggota">0 Orang</h3>
           </div>
 
           <div class="bg-white border border-[#E9E9E7] p-5 rounded-lg shadow-sm flex flex-col justify-center">
@@ -388,7 +388,7 @@
 
         <div>
           <label class="block text-xs font-medium text-[#787774] mb-1">Nominal (Rp)</label>
-          <input type="number" id="edit-amount" min="0" step="1000" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] outline-none">
+          <input type="number" id="edit-amount" min="1000" step="1000" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] outline-none">
         </div>
 
         <div class="flex space-x-3 pt-2">
@@ -481,35 +481,31 @@
 
   <!-- Notification Toast -->
   <div id="toast" class="fixed bottom-5 right-5 hidden px-4 py-3 rounded-lg shadow-[0_5px_15px_rgba(0,0,0,0.1)] text-white font-medium text-sm flex items-center space-x-3 transition-all z-50">
-    <!-- Ikon fungsional penanda sukses/gagal notifikasi -->
     <i id="toast-icon" class="fa-solid text-[16px]"></i>
     <span id="toast-msg"></span>
   </div>
 
   <script>
     // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI (BERAKHIRAN /exec)
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_HWyzAxn7DtzihV0mFXBY87KQuUia4TC5bIhk-m-e_IQahffA2tRCzAgOLFyAAY2usw/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzJe2D65fh59nAqeE1Qr-h1r_hzz2Rz6BxXhtoLzxv9xPrp1P6X1yJYLLIkKDSwp5aK/exec";
 
     let currentRole = null;
     let loggedMemberName = null;
-    let dashboardData = [
-      { name: "MBAK AVI", perTabungan: 50000, total: 1200000, count: 24 },
-      { name: "MBAK NAFIS", perTabungan: 20000, total: 100000, count: 5 },
-      { name: "MBAK KASIH", perTabungan: 100000, total: 1400000, count: 14 },
-      { name: "MBAK RENITA", perTabungan: 100000, total: 2500000, count: 25 },
-      { name: "BU YELI", perTabungan: 50000, total: 1300000, count: 26 },
-      { name: "BU TITIK", perTabungan: 30000, total: 780000, count: 26 },
-      { name: "MBAK FARIDA", perTabungan: 100000, total: 2800000, count: 28 },
-      { name: "MBAK AZIZAH", perTabungan: 50000, total: 700000, count: 14 },
-      { name: "MBAK KHARIN", perTabungan: 100000, total: 1800000, count: 18 },
-      { name: "MBAK PUTRI", perTabungan: 50000, total: 1250000, count: 25 },
-      { name: "MBAK LIA", perTabungan: 20000, total: 200000, count: 10 },
-      { name: "MBAK HILDA", perTabungan: 50000, total: 1500000, count: 30 },
-      { name: "BU ANGGRI", perTabungan: 10000, total: 260000, count: 26 }
-    ];
+    let dashboardData = [];
+
+    // Fungsi utilitas untuk mencegah XSS (Cross-Site Scripting)
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
 
     async function callApi(action, payload = {}) {
-      if (!SCRIPT_URL || SCRIPT_URL === "URL_WEB_APP_GOOGLE_SCRIPT_ANDA") {
+      if (!SCRIPT_URL || SCRIPT_URL === "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
         throw new Error("URL Web App belum diisi pada variabel SCRIPT_URL!");
       }
       payload.action = action;
@@ -529,17 +525,35 @@
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('input-date').value = new Date().toISOString().substring(0, 10);
 
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA") {
+      // Mulai dengan mengambil data dashboard, lalu cek session
+      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
         callApi('getDashboardData')
-          .then(onDataLoaded)
+          .then(data => {
+            onDataLoaded(data);
+            checkSession();
+          })
           .catch(err => {
             console.error(err);
             populateLoginMemberDropdown();
+            checkSession();
           });
       } else {
         populateLoginMemberDropdown();
+        checkSession();
       }
     });
+
+    // Fitur Auto-Login dengan sessionStorage
+    function checkSession() {
+      const savedRole = sessionStorage.getItem('tb_role');
+      const savedName = sessionStorage.getItem('tb_name');
+      
+      if (savedRole === 'admin') {
+        initSession('admin', null);
+      } else if (savedRole === 'anggota' && savedName) {
+        initSession('anggota', savedName);
+      }
+    }
 
     function onDataLoaded(data) {
       if (data && data.length > 0) {
@@ -583,7 +597,7 @@
       const memberName = document.getElementById('login-member-select').value;
       const pin = document.getElementById('login-member-pin').value;
 
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA") {
+      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
         callApi('verifyPin', { name: memberName, pin: pin, role: 'anggota' })
           .then(res => {
             if (res && res.valid) {
@@ -594,11 +608,7 @@
           })
           .catch(err => showToast("Error login: " + err.message, "error"));
       } else {
-        if (pin === "1234" || pin === "") {
-          initSession('anggota', memberName);
-        } else {
-          showToast("PIN Anggota salah!", "error");
-        }
+        showToast("Masukkan URL Script Anda terlebih dahulu!", "error");
       }
     }
 
@@ -606,7 +616,7 @@
       e.preventDefault();
       const pin = document.getElementById('login-admin-pin').value;
 
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA") {
+      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
         callApi('verifyPin', { name: 'ADMIN', pin: pin, role: 'admin' })
           .then(res => {
             if (res && res.valid) {
@@ -617,17 +627,17 @@
           })
           .catch(err => showToast("Error login: " + err.message, "error"));
       } else {
-        if (pin === "8888") {
-          initSession('admin', null);
-        } else {
-          showToast("PIN Admin salah! (Default: 8888)", "error");
-        }
+         showToast("Masukkan URL Script Anda terlebih dahulu!", "error");
       }
     }
 
     function initSession(role, name) {
       currentRole = role;
       loggedMemberName = name;
+      
+      // Simpan session agar tidak logout saat refresh
+      sessionStorage.setItem('tb_role', role);
+      if (name) sessionStorage.setItem('tb_name', name);
 
       document.getElementById('screen-login').classList.add('hidden');
       document.getElementById('screen-app').classList.remove('hidden');
@@ -655,6 +665,11 @@
     function logout() {
       currentRole = null;
       loggedMemberName = null;
+      
+      // Hapus data session
+      sessionStorage.removeItem('tb_role');
+      sessionStorage.removeItem('tb_name');
+
       document.getElementById('login-member-pin').value = '';
       document.getElementById('login-admin-pin').value = '';
       document.getElementById('screen-app').classList.add('hidden');
@@ -691,7 +706,7 @@
         currentPin: pin
       };
 
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA") {
+      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
         callApi('changeMemberName', payload)
           .then(res => {
             btn.disabled = false;
@@ -699,6 +714,8 @@
             closeChangeNameModal();
             
             loggedMemberName = res.newName;
+            sessionStorage.setItem('tb_name', res.newName); // Update session
+
             document.getElementById('portal-user-name').innerText = res.newName;
             document.getElementById('user-role-badge').innerText = `Anggota: ${res.newName}`;
             
@@ -711,16 +728,6 @@
             btn.innerHTML = `Simpan`;
             showToast("Gagal ubah nama: " + err.message, "error");
           });
-      } else {
-        setTimeout(() => {
-          btn.disabled = false;
-          btn.innerHTML = `Simpan`;
-          closeChangeNameModal();
-          loggedMemberName = newName;
-          document.getElementById('portal-user-name').innerText = newName;
-          document.getElementById('user-role-badge').innerText = `Anggota: ${newName}`;
-          showToast("Demo Mode: Nama berhasil diubah!", "success");
-        }, 800);
       }
     }
 
@@ -754,7 +761,7 @@
         newPin: newPin
       };
 
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA") {
+      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
         callApi('changeMemberPin', payload)
           .then(res => {
             btn.disabled = false;
@@ -767,13 +774,6 @@
             btn.innerHTML = `Simpan`;
             showToast("Gagal ubah PIN: " + err.message, "error");
           });
-      } else {
-        setTimeout(() => {
-          btn.disabled = false;
-          btn.innerHTML = `Simpan`;
-          closeChangePinModal();
-          showToast("Demo Mode: PIN berhasil diubah!", "success");
-        }, 800);
       }
     }
 
@@ -784,18 +784,10 @@
       document.getElementById('portal-total-saldo').innerText = formatRupiah(memberInfo ? memberInfo.total : 0);
       document.getElementById('portal-total-setoran').innerText = (memberInfo ? memberInfo.count : 0) + " Minggu";
 
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA") {
+      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
         callApi('getMemberDetails', { name: loggedMemberName })
           .then(renderPortalHistory)
           .catch(err => console.error(err));
-      } else {
-        const mockRows = Array.from({ length: 5 }, (_, i) => ({
-          date: `2026-0${i+1}-01`,
-          name: loggedMemberName,
-          type: i % 2 === 0 ? "Cash" : "Bank transfer",
-          amount: memberInfo ? memberInfo.perTabungan : 50000
-        }));
-        renderPortalHistory(mockRows);
       }
     }
 
@@ -812,10 +804,12 @@
         const tr = document.createElement('tr');
         tr.className = "border-b border-[#E9E9E7] hover:bg-[#F7F7F5]/80 transition-colors";
         const badgeStyle = r.type === 'Cash' ? 'bg-[#F1F1EF] text-[#37352F]' : 'bg-[#E8F3FB] text-[#2383E2]';
+        const safeName = escapeHTML(r.name);
+
         tr.innerHTML = `
-          <td class="py-3 px-4 font-medium text-[#787774]">${r.date}</td>
-          <td class="py-3 px-4 font-medium text-[#37352F]">${r.name}</td>
-          <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[11px] font-medium ${badgeStyle}">${r.type}</span></td>
+          <td class="py-3 px-4 font-medium text-[#787774]">${escapeHTML(r.date)}</td>
+          <td class="py-3 px-4 font-medium text-[#37352F]">${safeName}</td>
+          <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[11px] font-medium ${badgeStyle}">${escapeHTML(r.type)}</span></td>
           <td class="py-3 px-4 text-right font-medium text-[#37352F]">${formatRupiah(r.amount)}</td>
         `;
         tbody.appendChild(tr);
@@ -833,15 +827,17 @@
         grandTotal += item.total;
         totalSetoranCount += item.count;
 
+        const safeName = escapeHTML(item.name);
+
         const tr = document.createElement('tr');
         tr.className = "border-b border-[#E9E9E7] hover:bg-[#F7F7F5]/80 transition-colors";
         tr.innerHTML = `
-          <td class="py-3 px-4 font-medium text-[#37352F]">${item.name}</td>
+          <td class="py-3 px-4 font-medium text-[#37352F]">${safeName}</td>
           <td class="py-3 px-4 text-right text-[#787774]">${formatRupiah(item.perTabungan)}</td>
           <td class="py-3 px-4 text-right text-[#787774]">${item.count} Mgg</td>
           <td class="py-3 px-4 text-right font-medium text-[#37352F]">${formatRupiah(item.total)}</td>
           <td class="py-3 px-4 text-center">
-            <button onclick="inspectMember('${item.name}')" class="text-xs text-[#787774] hover:text-[#37352F] bg-white border border-[#E9E9E7] hover:bg-[#F7F7F5] px-2.5 py-1 rounded transition whitespace-nowrap">
+            <button onclick="inspectMember('${safeName.replace(/'/g, "\\'")}')" class="text-xs text-[#787774] hover:text-[#37352F] bg-white border border-[#E9E9E7] hover:bg-[#F7F7F5] px-2.5 py-1 rounded transition whitespace-nowrap">
               Detail
             </button>
           </td>
@@ -873,7 +869,10 @@
         inputMember.appendChild(opt2);
       });
 
-      loadMemberDetail();
+      // Reload detail if member tab is active
+      if(!document.getElementById('tab-member').classList.contains('hidden')) {
+        loadMemberDetail();
+      }
     }
 
     function switchTab(tabName) {
@@ -904,19 +903,10 @@
       const totalVal = memberInfo ? memberInfo.total : 0;
       document.getElementById('member-total-val').innerText = formatRupiah(totalVal);
 
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA") {
+      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
         callApi('getMemberDetails', { name: selectedName })
           .then(renderMemberHistory)
           .catch(err => console.error(err));
-      } else {
-        const mockRows = Array.from({ length: 5 }, (_, i) => ({
-          rowIndex: i + 2,
-          date: `2026-0${i+1}-01`,
-          name: selectedName,
-          type: i % 2 === 0 ? "Cash" : "Bank transfer",
-          amount: memberInfo ? memberInfo.perTabungan : 50000
-        }));
-        renderMemberHistory(mockRows);
       }
     }
 
@@ -929,23 +919,23 @@
         return;
       }
 
-      rows.forEach((r, idx) => {
+      rows.forEach((r) => {
         const tr = document.createElement('tr');
         tr.className = "border-b border-[#E9E9E7] hover:bg-[#F7F7F5]/80 transition-colors group";
         const badgeStyle = r.type === 'Cash' ? 'bg-[#F1F1EF] text-[#37352F]' : 'bg-[#E8F3FB] text-[#2383E2]';
-        const rowIdx = r.rowIndex || (idx + 2);
+        const safeName = escapeHTML(r.name);
         
         tr.innerHTML = `
-          <td class="py-3 px-4 font-medium text-[#787774]">${r.date}</td>
-          <td class="py-3 px-4 font-medium text-[#37352F]">${r.name}</td>
-          <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[11px] font-medium ${badgeStyle}">${r.type}</span></td>
+          <td class="py-3 px-4 font-medium text-[#787774]">${escapeHTML(r.date)}</td>
+          <td class="py-3 px-4 font-medium text-[#37352F]">${safeName}</td>
+          <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[11px] font-medium ${badgeStyle}">${escapeHTML(r.type)}</span></td>
           <td class="py-3 px-4 text-right font-medium text-[#37352F]">${formatRupiah(r.amount)}</td>
           <td class="py-3 px-4 text-center">
             <div class="flex items-center justify-center space-x-2">
-              <button onclick="openEditModal(${rowIdx}, '${r.date}', '${r.name}', '${r.type}', ${r.amount})" class="w-7 h-7 flex items-center justify-center rounded bg-white border border-[#E9E9E7] text-[#787774] hover:bg-[#F7F7F5] hover:text-[#37352F] transition" title="Edit Data">
+              <button onclick="openEditModal(${r.rowIndex}, '${escapeHTML(r.date)}', '${safeName.replace(/'/g, "\\'")}', '${escapeHTML(r.type)}', ${r.amount})" class="w-7 h-7 flex items-center justify-center rounded bg-white border border-[#E9E9E7] text-[#787774] hover:bg-[#F7F7F5] hover:text-[#37352F] transition" title="Edit Data">
                 <i class="fa-solid fa-pen text-[11px]"></i>
               </button>
-              <button onclick="deleteSetoranItem(${rowIdx}, '${r.date}', '${r.name}', ${r.amount})" class="w-7 h-7 flex items-center justify-center rounded bg-white border border-[#E9E9E7] text-[#EB5757]/70 hover:bg-[#F7F7F5] hover:text-[#EB5757] transition" title="Hapus Data">
+              <button onclick="deleteSetoranItem(${r.rowIndex}, '${escapeHTML(r.date)}', '${safeName.replace(/'/g, "\\'")}', ${r.amount})" class="w-7 h-7 flex items-center justify-center rounded bg-white border border-[#E9E9E7] text-[#EB5757]/70 hover:bg-[#F7F7F5] hover:text-[#EB5757] transition" title="Hapus Data">
                 <i class="fa-solid fa-trash text-[11px]"></i>
               </button>
             </div>
@@ -984,28 +974,25 @@
         amount: parseFloat(document.getElementById('edit-amount').value)
       };
 
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA") {
+      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
         callApi('updateSetoran', payload)
           .then(() => {
             btn.disabled = false;
             btn.innerHTML = `Simpan`;
             closeEditModal();
             showToast("Setoran berhasil diperbarui!", "success");
-            loadMemberDetail();
-            callApi('getDashboardData').then(onDataLoaded);
+            
+            // Segarkan data dashboard dan history anggota spesifik
+            callApi('getDashboardData').then(data => {
+               onDataLoaded(data);
+               loadMemberDetail();
+            });
           })
           .catch(err => {
             btn.disabled = false;
             btn.innerHTML = `Simpan`;
             showToast("Gagal mengedit data: " + err.message, "error");
           });
-      } else {
-        setTimeout(() => {
-          btn.disabled = false;
-          btn.innerHTML = `Simpan`;
-          closeEditModal();
-          showToast("Demo Mode: Data berhasil diubah!", "success");
-        }, 800);
       }
     }
 
@@ -1020,16 +1007,18 @@
         name: name
       };
 
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA") {
+      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
         callApi('deleteSetoran', payload)
           .then(() => {
             showToast("Setoran dihapus!", "success");
-            loadMemberDetail();
-            callApi('getDashboardData').then(onDataLoaded);
+            
+            // Segarkan data dashboard dan history anggota spesifik
+            callApi('getDashboardData').then(data => {
+               onDataLoaded(data);
+               loadMemberDetail();
+            });
           })
           .catch(err => showToast("Gagal menghapus data: " + err.message, "error"));
-      } else {
-        showToast("Demo Mode: Setoran dihapus!", "success");
       }
     }
 
@@ -1056,14 +1045,17 @@
         amount: parseFloat(document.getElementById('input-amount').value)
       };
 
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA") {
+      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
         callApi('addSetoran', payload)
           .then(() => {
             btn.disabled = false;
             btn.innerHTML = `<i class="fa-solid fa-arrow-up text-xs"></i><span>Simpan Data</span>`;
             showToast("Setoran berhasil disimpan!", "success");
+            
+            // Reset form dan ambil ulang data Dashboard
             document.getElementById('form-setoran').reset();
             document.getElementById('input-date').value = new Date().toISOString().substring(0, 10);
+            
             callApi('getDashboardData').then(onDataLoaded);
           })
           .catch(err => {
@@ -1071,12 +1063,6 @@
             btn.innerHTML = `<i class="fa-solid fa-arrow-up text-xs"></i><span>Simpan Data</span>`;
             showToast("Gagal menyimpan: " + err.message, "error");
           });
-      } else {
-        setTimeout(() => {
-          btn.disabled = false;
-          btn.innerHTML = `<i class="fa-solid fa-arrow-up text-xs"></i><span>Simpan Data</span>`;
-          showToast("Demo Mode: Setoran tersimpan!", "success");
-        }, 1000);
       }
     }
 
