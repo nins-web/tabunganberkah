@@ -501,7 +501,7 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('input-date').value = new Date().toISOString().substring(0, 10);
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
+      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzJe2D65fh59nAqeE1Qr-h1r_hzz2Rz6BxXhtoLzxv9xPrp1P6X1yJYLLIkKDSwp5aK/exec") {
         callApi('getDashboardData').then(data => { onDataLoaded(data); checkSession(); }).catch(err => { populateLoginMemberDropdown(); checkSession(); });
       } else { populateLoginMemberDropdown(); checkSession(); }
     });
