@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tabungan Berkah</title>
   
-  <!-- Google Fonts: Plus Jakarta Sans (Clean Sans-Serif) -->
+  <!-- Google Fonts: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -15,6 +15,11 @@
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
+  <!-- Chart.js (Grafik Animasi) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- HTML2PDF (Ekspor Laporan) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
   <style>
     body {
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -22,21 +27,14 @@
       color: #37352F;
     }
     
-    /* Scrollbar minimalis ala Notion */
-    .custom-scrollbar::-webkit-scrollbar {
-      height: 6px;
-      width: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #D3D1CB;
-      border-radius: 10px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #AEACA6;
-    }
+    .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #D3D1CB; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #AEACA6; }
+    
+    /* Hover state untuk header kolom yang bisa disortir */
+    .sortable-header { cursor: pointer; transition: background-color 0.2s; }
+    .sortable-header:hover { background-color: #E9E9E7; }
   </style>
 </head>
 <body class="antialiased min-h-screen flex flex-col selection:bg-[#2383E2]/20">
@@ -45,9 +43,7 @@
   <div id="screen-login" class="min-h-screen flex items-center justify-center p-4 bg-[#F7F7F5]">
     <div class="bg-white rounded-xl shadow-[0_5px_20px_rgba(0,0,0,0.04)] border border-[#E9E9E7] max-w-sm w-full p-8 space-y-7">
       
-      <!-- Logo & Header -->
       <div class="text-center space-y-3">
-        <!-- Logo Inisial TB -->
         <div class="w-14 h-14 bg-[#37352F] rounded-xl flex items-center justify-center mx-auto shadow-sm border border-[#2F2D27] transition-transform hover:scale-105">
           <span class="font-extrabold text-2xl text-white tracking-tighter" style="font-family: ui-sans-serif, system-ui, sans-serif;">TB</span>
         </div>
@@ -57,7 +53,6 @@
         </div>
       </div>
 
-      <!-- Tab Switch: Anggota vs Admin -->
       <div class="flex bg-[#F7F7F5] p-1 rounded-lg text-sm font-medium border border-[#E9E9E7]">
         <button type="button" onclick="setLoginRole('anggota')" id="btn-role-anggota" class="flex-1 py-1.5 rounded-md bg-white shadow-sm border border-[#E9E9E7] text-[#37352F] transition-all flex items-center justify-center space-x-1.5">
           <span>Anggota</span>
@@ -74,7 +69,6 @@
           <div class="relative">
             <select id="login-member-select" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm text-[#37352F] focus:bg-white focus:border-[#2383E2] focus:ring-2 focus:ring-[#2383E2]/20 outline-none transition-all appearance-none cursor-pointer font-medium">
             </select>
-            <!-- Ikon Chevron berfungsi menandakan opsi dropdown -->
             <i class="fa-solid fa-chevron-down absolute right-3 top-2.5 text-[#787774] text-xs pointer-events-none"></i>
           </div>
         </div>
@@ -104,13 +98,10 @@
   <!-- SCREEN 2: APLIKASI UTAMA -->
   <div id="screen-app" class="hidden min-h-screen flex flex-col bg-white">
     
-    <!-- Header Navigation -->
     <header class="bg-white border-b border-[#E9E9E7] sticky top-0 z-40">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
-        
         <div class="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-start">
           <div class="flex items-center space-x-3 cursor-default">
-            <!-- Logo Inisial TB Mini -->
             <div class="w-7 h-7 bg-[#37352F] rounded-md flex items-center justify-center border border-[#2F2D27] shadow-sm">
               <span class="font-bold text-[12px] text-white tracking-tighter" style="font-family: ui-sans-serif, system-ui, sans-serif;">TB</span>
             </div>
@@ -119,7 +110,6 @@
               <p class="text-[11px] text-[#787774] font-medium" id="user-role-badge">Session</p>
             </div>
           </div>
-          <!-- Ikon berfungsi sebagai tombol logout di mobile -->
           <button onclick="logout()" class="sm:hidden text-xs text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5] px-2 py-1 rounded transition flex items-center space-x-1">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
           </button>
@@ -129,7 +119,6 @@
           <button onclick="switchTab('portal')" id="nav-portal" class="nav-item px-3 py-1.5 rounded-md text-sm font-medium transition-all whitespace-nowrap hidden">
             Tabungan Saya
           </button>
-
           <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item px-3 py-1.5 rounded-md text-sm font-medium transition-all whitespace-nowrap hidden">
             Dashboard
           </button>
@@ -139,18 +128,14 @@
           <button onclick="switchTab('input')" id="nav-input" class="nav-item px-3 py-1.5 rounded-md text-sm font-medium transition-all whitespace-nowrap hidden">
             Input Setoran
           </button>
-
           <div class="hidden sm:block border-l border-[#E9E9E7] h-4 mx-2"></div>
-
           <button onclick="logout()" class="hidden sm:inline-flex items-center text-sm font-medium text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5] px-3 py-1.5 rounded-md transition-all">
             Keluar
           </button>
         </div>
-
       </div>
     </header>
 
-    <!-- Main Content Container -->
     <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex-1 w-full">
 
       <!-- MENU KHUSUS ANGGOTA -->
@@ -159,48 +144,56 @@
           <div>
             <span class="text-[#787774] text-xs font-semibold uppercase tracking-widest">Portal Pribadi</span>
             <h2 class="text-3xl font-bold mt-1 text-[#37352F]" id="portal-user-name">Nama Anggota</h2>
-            <p class="text-sm text-[#787774] mt-2 max-w-xl">Ringkasan akumulasi saldo dan catatan riwayat setoran tabungan Anda.</p>
           </div>
           <div class="flex space-x-2 shrink-0">
-            <!-- Ikon pada tombol fungsi -->
-            <button onclick="openChangeNameModal()" class="px-3 py-1.5 bg-white hover:bg-[#F7F7F5] border border-[#E9E9E7] text-[#37352F] rounded text-sm font-medium shadow-sm transition flex items-center space-x-1.5">
-              <i class="fa-solid fa-pen text-[12px]"></i>
-              <span>Nama</span>
+            <button onclick="openChangeNameModal()" class="px-3 py-1.5 bg-white border border-[#E9E9E7] rounded text-sm shadow-sm transition">
+              <i class="fa-solid fa-pen"></i> Nama
             </button>
-            <button onclick="openChangePinModal()" class="px-3 py-1.5 bg-white hover:bg-[#F7F7F5] border border-[#E9E9E7] text-[#37352F] rounded text-sm font-medium shadow-sm transition flex items-center space-x-1.5">
-              <i class="fa-solid fa-lock text-[12px]"></i>
-              <span>Ganti PIN</span>
+            <button onclick="openChangePinModal()" class="px-3 py-1.5 bg-white border border-[#E9E9E7] rounded text-sm shadow-sm transition">
+              <i class="fa-solid fa-lock"></i> Ganti PIN
             </button>
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-          <div class="bg-white border border-[#E9E9E7] p-5 rounded-lg shadow-sm flex flex-col justify-center transition-all hover:border-[#D3D1CB]">
+          <div class="bg-white border border-[#E9E9E7] p-5 rounded-lg shadow-sm flex flex-col justify-center">
             <span class="text-xs text-[#787774] font-medium uppercase tracking-wider">Total Saldo</span>
-            <span class="text-3xl font-bold text-[#37352F] mt-1 tracking-tight" id="portal-total-saldo">Rp 0</span>
+            <span class="text-3xl font-bold text-[#37352F] mt-1" id="portal-total-saldo">Rp 0</span>
           </div>
-
-          <div class="bg-white border border-[#E9E9E7] p-5 rounded-lg shadow-sm flex flex-col justify-center transition-all hover:border-[#D3D1CB]">
+          <div class="bg-white border border-[#E9E9E7] p-5 rounded-lg shadow-sm flex flex-col justify-center">
             <span class="text-xs text-[#787774] font-medium uppercase tracking-wider">Frekuensi Setoran</span>
-            <span class="text-3xl font-bold text-[#37352F] mt-1 tracking-tight" id="portal-total-setoran">0 Minggu</span>
+            <span class="text-3xl font-bold text-[#37352F] mt-1" id="portal-total-setoran">0 Minggu</span>
           </div>
         </div>
 
-        <div class="pt-4">
-          <h3 class="text-lg font-bold text-[#37352F] mb-4">Riwayat Setoran</h3>
+        <!-- Area Download Laporan Anggota -->
+        <div id="pdf-area-portal" class="pt-4 border border-[#E9E9E7] rounded-lg p-5">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-[#37352F]">Riwayat Setoran</h3>
+            <button onclick="exportToPDF('pdf-area-portal', 'Laporan_Tabungan_Pribadi')" class="no-print px-3 py-1.5 bg-[#37352F] text-white rounded text-xs font-medium transition hover:bg-[#2F2F2F]">
+              <i class="fa-solid fa-download mr-1"></i> Cetak PDF
+            </button>
+          </div>
           <div class="overflow-x-auto custom-scrollbar border border-[#E9E9E7] rounded-lg">
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-[#F7F7F5] text-[#787774] text-xs font-medium border-b border-[#E9E9E7]">
-                  <th class="py-2.5 px-4 font-medium">Tanggal</th>
-                  <th class="py-2.5 px-4 font-medium">Nama</th>
-                  <th class="py-2.5 px-4 font-medium">Metode</th>
-                  <th class="py-2.5 px-4 font-medium text-right">Nominal</th>
+                  <th class="py-2.5 px-4 sortable-header" onclick="sortPortal('date')">Tanggal <i class="fa-solid fa-sort ml-1"></i></th>
+                  <th class="py-2.5 px-4 sortable-header" onclick="sortPortal('name')">Nama <i class="fa-solid fa-sort ml-1"></i></th>
+                  <th class="py-2.5 px-4">Metode</th>
+                  <th class="py-2.5 px-4 text-right sortable-header" onclick="sortPortal('amount')">Nominal <i class="fa-solid fa-sort ml-1"></i></th>
                 </tr>
               </thead>
-              <tbody class="text-sm text-[#37352F]" id="portal-history-tbody">
-              </tbody>
+              <tbody class="text-sm text-[#37352F]" id="portal-history-tbody"></tbody>
             </table>
+          </div>
+          <!-- Paginasi Tabel Portal -->
+          <div class="flex justify-between items-center mt-3 no-print text-sm text-[#787774]">
+            <span id="portal-page-info">Halaman 1 dari 1</span>
+            <div class="flex space-x-1">
+              <button onclick="prevPage('portal')" class="px-2.5 py-1 bg-[#F7F7F5] border border-[#E9E9E7] rounded hover:bg-[#E9E9E7]">Prev</button>
+              <button onclick="nextPage('portal')" class="px-2.5 py-1 bg-[#F7F7F5] border border-[#E9E9E7] rounded hover:bg-[#E9E9E7]">Next</button>
+            </div>
           </div>
         </div>
       </section>
@@ -209,33 +202,35 @@
       <section id="tab-dashboard" class="space-y-8 hidden">
         <div class="border-b border-[#E9E9E7] pb-6">
           <h2 class="text-2xl font-bold text-[#37352F]">Dashboard Admin</h2>
-          <p class="text-sm text-[#787774] mt-1">Ringkasan keseluruhan data tabungan anggota.</p>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-          <div class="bg-white border border-[#E9E9E7] p-5 rounded-lg shadow-sm flex flex-col justify-center">
-            <p class="text-xs font-medium uppercase tracking-wider text-[#787774]">Total Anggota</p>
+          <div class="bg-white border border-[#E9E9E7] p-5 rounded-lg shadow-sm">
+            <p class="text-xs font-medium uppercase text-[#787774]">Total Anggota</p>
             <h3 class="text-2xl font-bold text-[#37352F] mt-1" id="kpi-total-anggota">0 Orang</h3>
           </div>
-
-          <div class="bg-white border border-[#E9E9E7] p-5 rounded-lg shadow-sm flex flex-col justify-center">
-            <p class="text-xs font-medium uppercase tracking-wider text-[#787774]">Saldo Terkumpul</p>
+          <div class="bg-white border border-[#E9E9E7] p-5 rounded-lg shadow-sm">
+            <p class="text-xs font-medium uppercase text-[#787774]">Saldo Terkumpul</p>
             <h3 class="text-2xl font-bold text-[#37352F] mt-1" id="kpi-total-saldo">Rp 0</h3>
           </div>
-
-          <div class="bg-white border border-[#E9E9E7] p-5 rounded-lg shadow-sm flex flex-col justify-center">
-            <p class="text-xs font-medium uppercase tracking-wider text-[#787774]">Total Transaksi</p>
+          <div class="bg-white border border-[#E9E9E7] p-5 rounded-lg shadow-sm">
+            <p class="text-xs font-medium uppercase text-[#787774]">Total Transaksi</p>
             <h3 class="text-2xl font-bold text-[#37352F] mt-1" id="kpi-total-setoran">0 Kali</h3>
           </div>
+        </div>
+
+        <!-- Canvas Grafik Chart.js -->
+        <div class="bg-white border border-[#E9E9E7] p-5 rounded-lg shadow-sm">
+          <h3 class="text-sm font-bold text-[#37352F] mb-4">Grafik Pertumbuhan Saldo Anggota</h3>
+          <canvas id="dashboardChart" style="max-height: 300px;"></canvas>
         </div>
 
         <div class="pt-4">
           <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-4">
             <h2 class="text-lg font-bold text-[#37352F]">Rekapitulasi Anggota</h2>
             <div class="relative w-full sm:w-64">
-              <!-- Ikon pencarian (fungsional mengindikasikan Search bar) -->
               <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-[#787774] text-xs"></i>
-              <input type="text" id="search-input" onkeyup="filterDashboardTable()" placeholder="Cari anggota..." class="w-full pl-8 pr-3 py-1.5 bg-[#F7F7F5] border border-transparent focus:bg-white focus:border-[#2383E2] focus:ring-2 focus:ring-[#2383E2]/20 rounded-md text-sm outline-none transition-all">
+              <input type="text" id="search-input" onkeyup="filterDashboardTable()" placeholder="Cari anggota..." class="w-full pl-8 pr-3 py-1.5 bg-[#F7F7F5] border border-transparent focus:border-[#2383E2] rounded-md text-sm outline-none">
             </div>
           </div>
 
@@ -243,15 +238,14 @@
             <table class="w-full text-left border-collapse" id="dashboard-table">
               <thead>
                 <tr class="bg-[#F7F7F5] text-[#787774] text-xs font-medium border-b border-[#E9E9E7]">
-                  <th class="py-2.5 px-4 font-medium">Nama</th>
-                  <th class="py-2.5 px-4 font-medium text-right">Patokan</th>
-                  <th class="py-2.5 px-4 font-medium text-right">Setoran</th>
-                  <th class="py-2.5 px-4 font-medium text-right">Total Saldo</th>
-                  <th class="py-2.5 px-4 font-medium text-center">Aksi</th>
+                  <th class="py-2.5 px-4 sortable-header" onclick="sortDashboard('name')">Nama <i class="fa-solid fa-sort ml-1"></i></th>
+                  <th class="py-2.5 px-4 text-right">Patokan</th>
+                  <th class="py-2.5 px-4 text-right sortable-header" onclick="sortDashboard('count')">Setoran <i class="fa-solid fa-sort ml-1"></i></th>
+                  <th class="py-2.5 px-4 text-right sortable-header" onclick="sortDashboard('total')">Total Saldo <i class="fa-solid fa-sort ml-1"></i></th>
+                  <th class="py-2.5 px-4 text-center">Aksi</th>
                 </tr>
               </thead>
-              <tbody class="text-sm text-[#37352F]" id="dashboard-tbody">
-              </tbody>
+              <tbody class="text-sm text-[#37352F]" id="dashboard-tbody"></tbody>
             </table>
           </div>
         </div>
@@ -259,19 +253,13 @@
 
       <!-- TAB 2: KELOLA DETAIL ANGGOTA (ADMIN) -->
       <section id="tab-member" class="space-y-8 hidden">
-        <div class="border-b border-[#E9E9E7] pb-6">
-          <h2 class="text-2xl font-bold text-[#37352F]">Kelola Detail Setoran</h2>
-          <p class="text-sm text-[#787774] mt-1">Pilih anggota untuk melihat, mengedit, atau menghapus riwayat.</p>
-        </div>
-
         <div class="bg-[#F7F7F5] border border-[#E9E9E7] p-5 rounded-lg">
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div class="w-full sm:w-1/3">
               <label class="block text-xs font-medium text-[#787774] mb-1.5 uppercase tracking-wide">Pilih Anggota</label>
               <div class="relative">
-                <select id="member-select" onchange="loadMemberDetail()" class="w-full bg-white border border-[#E9E9E7] rounded-md px-3 py-2 text-sm focus:border-[#2383E2] focus:ring-2 focus:ring-[#2383E2]/20 outline-none font-medium appearance-none cursor-pointer">
+                <select id="member-select" onchange="loadMemberDetail()" class="w-full bg-white border border-[#E9E9E7] rounded-md px-3 py-2 text-sm focus:border-[#2383E2] outline-none font-medium appearance-none">
                 </select>
-                <!-- Ikon Dropdown fungsional -->
                 <i class="fa-solid fa-chevron-down absolute right-3 top-2.5 text-[#787774] text-xs pointer-events-none"></i>
               </div>
             </div>
@@ -282,21 +270,35 @@
           </div>
         </div>
 
-        <div>
+        <!-- Area Download Admin -->
+        <div id="pdf-area-admin" class="border border-[#E9E9E7] rounded-lg p-5">
+           <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-[#37352F]">Kelola Riwayat Setoran</h3>
+            <button onclick="exportToPDF('pdf-area-admin', 'Rekap_Setoran_Anggota')" class="no-print px-3 py-1.5 bg-[#37352F] text-white rounded text-xs font-medium transition hover:bg-[#2F2F2F]">
+              <i class="fa-solid fa-download mr-1"></i> Cetak Laporan
+            </button>
+          </div>
           <div class="overflow-x-auto custom-scrollbar border border-[#E9E9E7] rounded-lg">
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-[#F7F7F5] text-[#787774] text-xs font-medium border-b border-[#E9E9E7]">
-                  <th class="py-2.5 px-4 font-medium">Tanggal</th>
-                  <th class="py-2.5 px-4 font-medium">Nama</th>
-                  <th class="py-2.5 px-4 font-medium">Metode</th>
-                  <th class="py-2.5 px-4 font-medium text-right">Nominal</th>
-                  <th class="py-2.5 px-4 font-medium text-center">Aksi</th>
+                  <th class="py-2.5 px-4 sortable-header" onclick="sortMember('date')">Tanggal <i class="fa-solid fa-sort ml-1"></i></th>
+                  <th class="py-2.5 px-4 sortable-header" onclick="sortMember('name')">Nama <i class="fa-solid fa-sort ml-1"></i></th>
+                  <th class="py-2.5 px-4">Metode</th>
+                  <th class="py-2.5 px-4 text-right sortable-header" onclick="sortMember('amount')">Nominal <i class="fa-solid fa-sort ml-1"></i></th>
+                  <th class="py-2.5 px-4 text-center no-print">Aksi</th>
                 </tr>
               </thead>
-              <tbody class="text-sm text-[#37352F]" id="member-history-tbody">
-              </tbody>
+              <tbody class="text-sm text-[#37352F]" id="member-history-tbody"></tbody>
             </table>
+          </div>
+          <!-- Paginasi Tabel Member Admin -->
+          <div class="flex justify-between items-center mt-3 no-print text-sm text-[#787774]">
+            <span id="member-page-info">Halaman 1 dari 1</span>
+            <div class="flex space-x-1">
+              <button onclick="prevPage('member')" class="px-2.5 py-1 bg-[#F7F7F5] border border-[#E9E9E7] rounded hover:bg-[#E9E9E7]">Prev</button>
+              <button onclick="nextPage('member')" class="px-2.5 py-1 bg-[#F7F7F5] border border-[#E9E9E7] rounded hover:bg-[#E9E9E7]">Next</button>
+            </div>
           </div>
         </div>
       </section>
@@ -306,28 +308,27 @@
         <div class="bg-white border border-[#E9E9E7] p-8 rounded-xl shadow-sm">
           <div class="border-b border-[#E9E9E7] pb-4 mb-6">
             <h2 class="text-xl font-bold text-[#37352F]">Input Setoran Baru</h2>
-            <p class="text-sm text-[#787774] mt-1">Tambahkan data ke spreadsheet.</p>
           </div>
 
           <form id="form-setoran" onsubmit="handleFormSubmit(event)" class="space-y-4">
             <div>
-              <label class="block text-xs font-medium text-[#787774] mb-1.5 uppercase tracking-wide">Tanggal</label>
-              <input type="date" id="input-date" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] focus:ring-2 focus:ring-[#2383E2]/20 outline-none transition-all">
+              <label class="block text-xs font-medium text-[#787774] mb-1.5 uppercase">Tanggal</label>
+              <input type="date" id="input-date" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] outline-none">
             </div>
 
             <div>
-              <label class="block text-xs font-medium text-[#787774] mb-1.5 uppercase tracking-wide">Nama Anggota</label>
+              <label class="block text-xs font-medium text-[#787774] mb-1.5 uppercase">Nama Anggota</label>
               <div class="relative">
-                <select id="input-member" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] focus:ring-2 focus:ring-[#2383E2]/20 outline-none transition-all appearance-none cursor-pointer">
+                <select id="input-member" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] outline-none appearance-none">
                 </select>
                 <i class="fa-solid fa-chevron-down absolute right-3 top-2.5 text-[#787774] text-xs pointer-events-none"></i>
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-medium text-[#787774] mb-1.5 uppercase tracking-wide">Metode Pembayaran</label>
+              <label class="block text-xs font-medium text-[#787774] mb-1.5 uppercase">Metode Pembayaran</label>
               <div class="relative">
-                <select id="input-payment-type" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] focus:ring-2 focus:ring-[#2383E2]/20 outline-none transition-all appearance-none cursor-pointer">
+                <select id="input-payment-type" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] outline-none appearance-none">
                   <option value="Cash">Cash</option>
                   <option value="Bank transfer">Bank Transfer</option>
                 </select>
@@ -336,12 +337,12 @@
             </div>
 
             <div>
-              <label class="block text-xs font-medium text-[#787774] mb-1.5 uppercase tracking-wide">Nominal (Rp)</label>
-              <input type="number" id="input-amount" min="1000" step="1000" placeholder="contoh: 50000" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] focus:ring-2 focus:ring-[#2383E2]/20 outline-none transition-all placeholder-[#D3D1CB]">
+              <label class="block text-xs font-medium text-[#787774] mb-1.5 uppercase">Nominal (Rp)</label>
+              <!-- Diubah menjadi type="text" untuk mendukung format ribuan saat diketik -->
+              <input type="text" id="input-amount" oninput="formatInputRibuan(this)" placeholder="contoh: 50.000" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] outline-none">
             </div>
 
-            <button type="submit" id="btn-submit" class="w-full bg-[#2383E2] hover:bg-[#1A73C8] text-white font-medium py-2.5 rounded-md text-sm transition-all shadow-sm mt-4 flex items-center justify-center space-x-2">
-              <!-- Ikon fungsional Upload/Submit data (panah ke atas) -->
+            <button type="submit" id="btn-submit" class="w-full bg-[#2383E2] text-white font-medium py-2.5 rounded-md text-sm mt-4 flex items-center justify-center space-x-2">
               <i class="fa-solid fa-arrow-up text-xs"></i>
               <span>Simpan Data</span>
             </button>
@@ -350,7 +351,6 @@
       </section>
 
     </main>
-
   </div>
 
   <!-- MODAL EDIT SETORAN (ADMIN) -->
@@ -358,207 +358,163 @@
     <div class="bg-white rounded-xl shadow-[0_15px_35px_rgba(0,0,0,0.1)] border border-[#E9E9E7] max-w-sm w-full p-6 space-y-5">
       <div class="flex items-center justify-between border-b border-[#E9E9E7] pb-3">
         <h3 class="text-base font-bold text-[#37352F]">Edit Data</h3>
-        <button onclick="closeEditModal()" class="text-[#787774] hover:text-[#37352F] p-1 transition">
-          <!-- Ikon fungsional Exit modal -->
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+        <button onclick="closeEditModal()" class="text-[#787774] hover:text-[#37352F] p-1"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <form id="form-edit-setoran" onsubmit="handleEditSubmit(event)" class="space-y-4">
         <input type="hidden" id="edit-row-index">
-        <input type="hidden" id="edit-original-date">
-
         <div>
           <label class="block text-xs font-medium text-[#787774] mb-1">Tanggal</label>
-          <input type="date" id="edit-date" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] outline-none">
+          <input type="date" id="edit-date" required class="w-full bg-[#F7F7F5] rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] outline-none">
         </div>
-
         <div>
           <label class="block text-xs font-medium text-[#787774] mb-1">Nama Anggota</label>
-          <input type="text" id="edit-member" readonly class="w-full bg-[#E9E9E7]/50 border border-transparent text-[#787774] rounded-md px-3 py-2 text-sm font-medium cursor-not-allowed">
+          <input type="text" id="edit-member" readonly class="w-full bg-[#E9E9E7]/50 text-[#787774] rounded-md px-3 py-2 text-sm font-medium cursor-not-allowed">
         </div>
-
         <div>
           <label class="block text-xs font-medium text-[#787774] mb-1">Metode</label>
-          <select id="edit-payment-type" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] outline-none">
+          <select id="edit-payment-type" required class="w-full bg-[#F7F7F5] rounded-md px-3 py-2 text-sm outline-none">
             <option value="Cash">Cash</option>
             <option value="Bank transfer">Bank Transfer</option>
           </select>
         </div>
-
         <div>
           <label class="block text-xs font-medium text-[#787774] mb-1">Nominal (Rp)</label>
-          <input type="number" id="edit-amount" min="1000" step="1000" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] outline-none">
+          <!-- Diubah menjadi type="text" -->
+          <input type="text" id="edit-amount" oninput="formatInputRibuan(this)" required class="w-full bg-[#F7F7F5] rounded-md px-3 py-2 text-sm outline-none">
         </div>
-
         <div class="flex space-x-3 pt-2">
-          <button type="button" onclick="closeEditModal()" class="w-1/2 bg-white border border-[#E9E9E7] text-[#37352F] font-medium py-2 rounded-md text-sm hover:bg-[#F7F7F5] transition">
-            Batal
-          </button>
-          <button type="submit" id="btn-save-edit" class="w-1/2 bg-[#37352F] hover:bg-[#2F2F2F] text-white font-medium py-2 rounded-md text-sm transition">
-            Simpan
-          </button>
+          <button type="button" onclick="closeEditModal()" class="w-1/2 bg-white border border-[#E9E9E7] text-[#37352F] py-2 rounded-md text-sm">Batal</button>
+          <button type="submit" id="btn-save-edit" class="w-1/2 bg-[#37352F] text-white py-2 rounded-md text-sm">Simpan</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL GANTI NAMA MANDIRI (ANGGOTA) -->
+  <!-- MODAL GANTI NAMA & PIN SAMA SEPERTI SEBELUMNYA (Disingkat untuk fokus HTML) -->
   <div id="modal-change-name" class="fixed inset-0 bg-[#0F0F0F]/30 backdrop-blur-[2px] z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-xl shadow-[0_15px_35px_rgba(0,0,0,0.1)] border border-[#E9E9E7] max-w-sm w-full p-6 space-y-5">
-      <div class="flex items-center justify-between border-b border-[#E9E9E7] pb-3">
-        <h3 class="text-base font-bold text-[#37352F]">Ganti Nama</h3>
-        <button onclick="closeChangeNameModal()" class="text-[#787774] hover:text-[#37352F] p-1 transition">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+    <div class="bg-white rounded-xl shadow-lg border border-[#E9E9E7] max-w-sm w-full p-6 space-y-5">
+      <div class="flex justify-between border-b border-[#E9E9E7] pb-3">
+        <h3 class="font-bold text-[#37352F]">Ganti Nama</h3>
+        <button onclick="closeChangeNameModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
-
       <form id="form-change-name" onsubmit="handleChangeNameSubmit(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-medium text-[#787774] mb-1">Nama Saat Ini</label>
-          <input type="text" id="name-current" readonly class="w-full bg-[#E9E9E7]/50 border border-transparent text-[#787774] rounded-md px-3 py-2 text-sm font-medium cursor-not-allowed">
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-[#787774] mb-1">Nama Baru</label>
-          <input type="text" id="name-new" placeholder="Masukkan Nama Baru" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] outline-none">
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-[#787774] mb-1">PIN Konfirmasi</label>
-          <input type="password" id="name-pin" placeholder="Masukkan PIN" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] outline-none">
-        </div>
-
-        <div class="flex space-x-3 pt-2">
-          <button type="button" onclick="closeChangeNameModal()" class="w-1/2 bg-white border border-[#E9E9E7] text-[#37352F] font-medium py-2 rounded-md text-sm hover:bg-[#F7F7F5] transition">
-            Batal
-          </button>
-          <button type="submit" id="btn-save-name" class="w-1/2 bg-[#2383E2] hover:bg-[#1A73C8] text-white font-medium py-2 rounded-md text-sm transition">
-            Simpan
-          </button>
-        </div>
+        <div><label class="text-xs text-[#787774]">Nama Saat Ini</label><input type="text" id="name-current" readonly class="w-full bg-[#E9E9E7]/50 px-3 py-2 text-sm rounded-md"></div>
+        <div><label class="text-xs text-[#787774]">Nama Baru</label><input type="text" id="name-new" required class="w-full bg-[#F7F7F5] px-3 py-2 text-sm rounded-md"></div>
+        <div><label class="text-xs text-[#787774]">PIN Konfirmasi</label><input type="password" id="name-pin" required class="w-full bg-[#F7F7F5] px-3 py-2 text-sm rounded-md"></div>
+        <div class="flex space-x-3"><button type="button" onclick="closeChangeNameModal()" class="w-1/2 border px-3 py-2 rounded-md">Batal</button><button type="submit" class="w-1/2 bg-[#2383E2] text-white rounded-md">Simpan</button></div>
       </form>
     </div>
   </div>
-
-  <!-- MODAL GANTI PIN MANDIRI (ANGGOTA) -->
+  
   <div id="modal-change-pin" class="fixed inset-0 bg-[#0F0F0F]/30 backdrop-blur-[2px] z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-xl shadow-[0_15px_35px_rgba(0,0,0,0.1)] border border-[#E9E9E7] max-w-sm w-full p-6 space-y-5">
-      <div class="flex items-center justify-between border-b border-[#E9E9E7] pb-3">
-        <h3 class="text-base font-bold text-[#37352F]">Ganti PIN</h3>
-        <button onclick="closeChangePinModal()" class="text-[#787774] hover:text-[#37352F] p-1 transition">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+    <div class="bg-white rounded-xl shadow-lg border border-[#E9E9E7] max-w-sm w-full p-6 space-y-5">
+      <div class="flex justify-between border-b border-[#E9E9E7] pb-3">
+        <h3 class="font-bold text-[#37352F]">Ganti PIN</h3>
+        <button onclick="closeChangePinModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
-
       <form id="form-change-pin" onsubmit="handleChangePinSubmit(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-medium text-[#787774] mb-1">PIN Saat Ini</label>
-          <input type="password" id="pin-current" placeholder="Masukkan PIN Lama" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] outline-none">
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-[#787774] mb-1">PIN Baru</label>
-          <input type="password" id="pin-new" placeholder="Min. 4 digit" minlength="4" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] outline-none">
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-[#787774] mb-1">Konfirmasi PIN Baru</label>
-          <input type="password" id="pin-confirm" placeholder="Ketik Ulang PIN" minlength="4" required class="w-full bg-[#F7F7F5] border border-transparent rounded-md px-3 py-2 text-sm focus:bg-white focus:border-[#2383E2] outline-none">
-        </div>
-
-        <div class="flex space-x-3 pt-2">
-          <button type="button" onclick="closeChangePinModal()" class="w-1/2 bg-white border border-[#E9E9E7] text-[#37352F] font-medium py-2 rounded-md text-sm hover:bg-[#F7F7F5] transition">
-            Batal
-          </button>
-          <button type="submit" id="btn-save-pin" class="w-1/2 bg-[#2383E2] hover:bg-[#1A73C8] text-white font-medium py-2 rounded-md text-sm transition">
-            Simpan
-          </button>
-        </div>
+        <div><label class="text-xs text-[#787774]">PIN Saat Ini</label><input type="password" id="pin-current" required class="w-full bg-[#F7F7F5] px-3 py-2 text-sm rounded-md"></div>
+        <div><label class="text-xs text-[#787774]">PIN Baru</label><input type="password" id="pin-new" minlength="4" required class="w-full bg-[#F7F7F5] px-3 py-2 text-sm rounded-md"></div>
+        <div><label class="text-xs text-[#787774]">Konfirmasi PIN</label><input type="password" id="pin-confirm" minlength="4" required class="w-full bg-[#F7F7F5] px-3 py-2 text-sm rounded-md"></div>
+        <div class="flex space-x-3"><button type="button" onclick="closeChangePinModal()" class="w-1/2 border px-3 py-2 rounded-md">Batal</button><button type="submit" class="w-1/2 bg-[#2383E2] text-white rounded-md">Simpan</button></div>
       </form>
     </div>
   </div>
 
-  <!-- Notification Toast -->
-  <div id="toast" class="fixed bottom-5 right-5 hidden px-4 py-3 rounded-lg shadow-[0_5px_15px_rgba(0,0,0,0.1)] text-white font-medium text-sm flex items-center space-x-3 transition-all z-50">
-    <i id="toast-icon" class="fa-solid text-[16px]"></i>
-    <span id="toast-msg"></span>
+  <div id="toast" class="fixed bottom-5 right-5 hidden px-4 py-3 rounded-lg shadow-lg text-white font-medium text-sm flex items-center space-x-3 z-50">
+    <i id="toast-icon" class="fa-solid text-[16px]"></i><span id="toast-msg"></span>
   </div>
 
   <script>
-    // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI (BERAKHIRAN /exec)
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzJe2D65fh59nAqeE1Qr-h1r_hzz2Rz6BxXhtoLzxv9xPrp1P6X1yJYLLIkKDSwp5aK/exec";
+    // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
+    const SCRIPT_URL = "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU";
 
     let currentRole = null;
     let loggedMemberName = null;
+    
+    // State Basis Data & Paginasi
     let dashboardData = [];
+    let portalData = [];
+    let memberData = [];
+    
+    let chartInstance = null;
 
-    // Fungsi utilitas untuk mencegah XSS (Cross-Site Scripting)
+    let pagination = {
+      dashboard: { page: 1, limit: 10, sortCol: 'name', sortAsc: true, query: '' },
+      portal: { page: 1, limit: 10, sortCol: 'date', sortAsc: false },
+      member: { page: 1, limit: 10, sortCol: 'date', sortAsc: false }
+    };
+
+    /* ===== FITUR 2: FORMAT TANGGAL & RUPIAH ===== */
     function escapeHTML(str) {
       if (!str) return '';
-      return str.toString()
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
+    function formatRupiah(number) {
+      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number || 0);
+    }
+
+    function formatTanggalIndo(dateStr) {
+      if (!dateStr) return "-";
+      const options = { day: 'numeric', month: 'long', year: 'numeric' };
+      return new Intl.DateTimeFormat('id-ID', options).format(new Date(dateStr));
+    }
+
+    function formatInputRibuan(input) {
+      let value = input.value.replace(/[^0-9]/g, '');
+      if (value !== '') {
+        input.value = new Intl.NumberFormat('id-ID').format(value);
+      }
+    }
+
+    function getUnmaskedValue(str) {
+      return parseInt(str.replace(/\./g, '')) || 0;
+    }
+
+    /* ===== FITUR 3: EKSPOR PDF (html2pdf) ===== */
+    function exportToPDF(elementId, filename) {
+      const element = document.getElementById(elementId);
+      const opt = {
+        margin:       0.5,
+        filename:     filename + '_' + new Date().toISOString().substring(0,10) + '.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, ignoreElements: (el) => el.classList.contains('no-print') },
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+      
+      // Tambahkan toast loading
+      showToast("Menyiapkan dokumen PDF...", "success");
+      html2pdf().set(opt).from(element).save();
+    }
+
+    /* ===== KONEKSI API & AUTENTIKASI ===== */
     async function callApi(action, payload = {}) {
-      if (!SCRIPT_URL || SCRIPT_URL === "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
-        throw new Error("URL Web App belum diisi pada variabel SCRIPT_URL!");
-      }
+      if (!SCRIPT_URL || SCRIPT_URL === "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") throw new Error("URL Web App belum disetting!");
       payload.action = action;
-      
-      const response = await fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
-      
+      const response = await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
       const result = await response.json();
-      if (result && result.error) {
-        throw new Error(result.error);
-      }
+      if (result && result.error) throw new Error(result.error);
       return result;
     }
 
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('input-date').value = new Date().toISOString().substring(0, 10);
-
-      // Mulai dengan mengambil data dashboard, lalu cek session
       if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
-        callApi('getDashboardData')
-          .then(data => {
-            onDataLoaded(data);
-            checkSession();
-          })
-          .catch(err => {
-            console.error(err);
-            populateLoginMemberDropdown();
-            checkSession();
-          });
-      } else {
-        populateLoginMemberDropdown();
-        checkSession();
-      }
+        callApi('getDashboardData').then(data => { onDataLoaded(data); checkSession(); }).catch(err => { populateLoginMemberDropdown(); checkSession(); });
+      } else { populateLoginMemberDropdown(); checkSession(); }
     });
 
-    // Fitur Auto-Login dengan sessionStorage
     function checkSession() {
       const savedRole = sessionStorage.getItem('tb_role');
       const savedName = sessionStorage.getItem('tb_name');
-      
-      if (savedRole === 'admin') {
-        initSession('admin', null);
-      } else if (savedRole === 'anggota' && savedName) {
-        initSession('anggota', savedName);
-      }
+      if (savedRole === 'admin') initSession('admin', null);
+      else if (savedRole === 'anggota' && savedName) initSession('anggota', savedName);
     }
 
     function onDataLoaded(data) {
-      if (data && data.length > 0) {
-        dashboardData = data;
-      }
+      dashboardData = data;
       populateLoginMemberDropdown();
     }
 
@@ -567,81 +523,41 @@
       loginSelect.innerHTML = '';
       dashboardData.forEach(item => {
         const opt = document.createElement('option');
-        opt.value = item.name;
-        opt.textContent = item.name;
+        opt.value = item.name; opt.textContent = item.name;
         loginSelect.appendChild(opt);
       });
     }
 
     function setLoginRole(role) {
-      const btnAnggota = document.getElementById('btn-role-anggota');
-      const btnAdmin = document.getElementById('btn-role-admin');
-      const formAnggota = document.getElementById('form-login-anggota');
-      const formAdmin = document.getElementById('form-login-admin');
-
+      const btnAnggota = document.getElementById('btn-role-anggota'), btnAdmin = document.getElementById('btn-role-admin');
+      const formAnggota = document.getElementById('form-login-anggota'), formAdmin = document.getElementById('form-login-admin');
       if (role === 'anggota') {
-        btnAnggota.className = "flex-1 py-1.5 rounded-md bg-white shadow-sm border border-[#E9E9E7] text-[#37352F] transition-all flex items-center justify-center space-x-1.5";
-        btnAdmin.className = "flex-1 py-1.5 rounded-md text-[#787774] hover:bg-[#E9E9E7]/50 transition-all flex items-center justify-center space-x-1.5";
-        formAnggota.classList.remove('hidden');
-        formAdmin.classList.add('hidden');
+        btnAnggota.className = "flex-1 py-1.5 rounded-md bg-white shadow-sm border border-[#E9E9E7] text-[#37352F] flex items-center justify-center";
+        btnAdmin.className = "flex-1 py-1.5 rounded-md text-[#787774] hover:bg-[#E9E9E7]/50 flex items-center justify-center";
+        formAnggota.classList.remove('hidden'); formAdmin.classList.add('hidden');
       } else {
-        btnAdmin.className = "flex-1 py-1.5 rounded-md bg-white shadow-sm border border-[#E9E9E7] text-[#37352F] transition-all flex items-center justify-center space-x-1.5";
-        btnAnggota.className = "flex-1 py-1.5 rounded-md text-[#787774] hover:bg-[#E9E9E7]/50 transition-all flex items-center justify-center space-x-1.5";
-        formAdmin.classList.remove('hidden');
-        formAnggota.classList.add('hidden');
+        btnAdmin.className = "flex-1 py-1.5 rounded-md bg-white shadow-sm border border-[#E9E9E7] text-[#37352F] flex items-center justify-center";
+        btnAnggota.className = "flex-1 py-1.5 rounded-md text-[#787774] hover:bg-[#E9E9E7]/50 flex items-center justify-center";
+        formAdmin.classList.remove('hidden'); formAnggota.classList.add('hidden');
       }
     }
 
-    function handleLoginAnggota(e) {
-      e.preventDefault();
-      const memberName = document.getElementById('login-member-select').value;
-      const pin = document.getElementById('login-member-pin').value;
+    function handleLoginAnggota(e) { e.preventDefault(); processLogin(document.getElementById('login-member-select').value, document.getElementById('login-member-pin').value, 'anggota'); }
+    function handleLoginAdmin(e) { e.preventDefault(); processLogin('ADMIN', document.getElementById('login-admin-pin').value, 'admin'); }
 
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
-        callApi('verifyPin', { name: memberName, pin: pin, role: 'anggota' })
-          .then(res => {
-            if (res && res.valid) {
-              initSession('anggota', memberName);
-            } else {
-              showToast("PIN Anggota salah!", "error");
-            }
-          })
-          .catch(err => showToast("Error login: " + err.message, "error"));
-      } else {
-        showToast("Masukkan URL Script Anda terlebih dahulu!", "error");
-      }
-    }
-
-    function handleLoginAdmin(e) {
-      e.preventDefault();
-      const pin = document.getElementById('login-admin-pin').value;
-
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
-        callApi('verifyPin', { name: 'ADMIN', pin: pin, role: 'admin' })
-          .then(res => {
-            if (res && res.valid) {
-              initSession('admin', null);
-            } else {
-              showToast("PIN Admin salah!", "error");
-            }
-          })
-          .catch(err => showToast("Error login: " + err.message, "error"));
-      } else {
-         showToast("Masukkan URL Script Anda terlebih dahulu!", "error");
-      }
+    function processLogin(name, pin, role) {
+      callApi('verifyPin', { name: name, pin: pin, role: role }).then(res => {
+        if (res && res.valid) initSession(role, name); else showToast("PIN salah!", "error");
+      }).catch(err => showToast("Error login: " + err.message, "error"));
     }
 
     function initSession(role, name) {
-      currentRole = role;
-      loggedMemberName = name;
-      
-      // Simpan session agar tidak logout saat refresh
+      currentRole = role; loggedMemberName = name;
       sessionStorage.setItem('tb_role', role);
       if (name) sessionStorage.setItem('tb_name', name);
 
       document.getElementById('screen-login').classList.add('hidden');
       document.getElementById('screen-app').classList.remove('hidden');
-
       document.querySelectorAll('.nav-item').forEach(el => el.classList.add('hidden'));
 
       if (role === 'anggota') {
@@ -655,7 +571,6 @@
         document.getElementById('nav-dashboard').classList.remove('hidden');
         document.getElementById('nav-member').classList.remove('hidden');
         document.getElementById('nav-input').classList.remove('hidden');
-        
         populateAdminDropdowns();
         renderDashboard();
         switchTab('dashboard');
@@ -663,428 +578,250 @@
     }
 
     function logout() {
-      currentRole = null;
-      loggedMemberName = null;
-      
-      // Hapus data session
-      sessionStorage.removeItem('tb_role');
-      sessionStorage.removeItem('tb_name');
-
-      document.getElementById('login-member-pin').value = '';
-      document.getElementById('login-admin-pin').value = '';
-      document.getElementById('screen-app').classList.add('hidden');
-      document.getElementById('screen-login').classList.remove('hidden');
-    }
-
-    function formatRupiah(number) {
-      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number || 0);
-    }
-
-    function openChangeNameModal() {
-      document.getElementById('name-current').value = loggedMemberName;
-      document.getElementById('name-new').value = '';
-      document.getElementById('name-pin').value = '';
-      document.getElementById('modal-change-name').classList.remove('hidden');
-    }
-
-    function closeChangeNameModal() {
-      document.getElementById('modal-change-name').classList.add('hidden');
-    }
-
-    function handleChangeNameSubmit(event) {
-      event.preventDefault();
-      const newName = document.getElementById('name-new').value.trim();
-      const pin = document.getElementById('name-pin').value;
-
-      const btn = document.getElementById('btn-save-name');
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
-
-      const payload = {
-        oldName: loggedMemberName,
-        newName: newName,
-        currentPin: pin
-      };
-
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
-        callApi('changeMemberName', payload)
-          .then(res => {
-            btn.disabled = false;
-            btn.innerHTML = `Simpan`;
-            closeChangeNameModal();
-            
-            loggedMemberName = res.newName;
-            sessionStorage.setItem('tb_name', res.newName); // Update session
-
-            document.getElementById('portal-user-name').innerText = res.newName;
-            document.getElementById('user-role-badge').innerText = `Anggota: ${res.newName}`;
-            
-            showToast("Nama berhasil diubah!", "success");
-            loadPortalData();
-            callApi('getDashboardData').then(onDataLoaded);
-          })
-          .catch(err => {
-            btn.disabled = false;
-            btn.innerHTML = `Simpan`;
-            showToast("Gagal ubah nama: " + err.message, "error");
-          });
-      }
-    }
-
-    function openChangePinModal() {
-      document.getElementById('form-change-pin').reset();
-      document.getElementById('modal-change-pin').classList.remove('hidden');
-    }
-
-    function closeChangePinModal() {
-      document.getElementById('modal-change-pin').classList.add('hidden');
-    }
-
-    function handleChangePinSubmit(event) {
-      event.preventDefault();
-      const currentPin = document.getElementById('pin-current').value;
-      const newPin = document.getElementById('pin-new').value;
-      const confirmPin = document.getElementById('pin-confirm').value;
-
-      if (newPin !== confirmPin) {
-        showToast("Konfirmasi PIN tidak cocok!", "error");
-        return;
-      }
-
-      const btn = document.getElementById('btn-save-pin');
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
-
-      const payload = {
-        name: loggedMemberName,
-        currentPin: currentPin,
-        newPin: newPin
-      };
-
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
-        callApi('changeMemberPin', payload)
-          .then(res => {
-            btn.disabled = false;
-            btn.innerHTML = `Simpan`;
-            closeChangePinModal();
-            showToast("PIN berhasil diubah!", "success");
-          })
-          .catch(err => {
-            btn.disabled = false;
-            btn.innerHTML = `Simpan`;
-            showToast("Gagal ubah PIN: " + err.message, "error");
-          });
-      }
-    }
-
-    function loadPortalData() {
-      if (!loggedMemberName) return;
-
-      const memberInfo = dashboardData.find(m => m.name === loggedMemberName);
-      document.getElementById('portal-total-saldo').innerText = formatRupiah(memberInfo ? memberInfo.total : 0);
-      document.getElementById('portal-total-setoran').innerText = (memberInfo ? memberInfo.count : 0) + " Minggu";
-
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
-        callApi('getMemberDetails', { name: loggedMemberName })
-          .then(renderPortalHistory)
-          .catch(err => console.error(err));
-      }
-    }
-
-    function renderPortalHistory(rows) {
-      const tbody = document.getElementById('portal-history-tbody');
-      tbody.innerHTML = '';
-
-      if (!rows || rows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-[#787774]">Belum ada riwayat setoran.</td></tr>`;
-        return;
-      }
-
-      rows.forEach(r => {
-        const tr = document.createElement('tr');
-        tr.className = "border-b border-[#E9E9E7] hover:bg-[#F7F7F5]/80 transition-colors";
-        const badgeStyle = r.type === 'Cash' ? 'bg-[#F1F1EF] text-[#37352F]' : 'bg-[#E8F3FB] text-[#2383E2]';
-        const safeName = escapeHTML(r.name);
-
-        tr.innerHTML = `
-          <td class="py-3 px-4 font-medium text-[#787774]">${escapeHTML(r.date)}</td>
-          <td class="py-3 px-4 font-medium text-[#37352F]">${safeName}</td>
-          <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[11px] font-medium ${badgeStyle}">${escapeHTML(r.type)}</span></td>
-          <td class="py-3 px-4 text-right font-medium text-[#37352F]">${formatRupiah(r.amount)}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function renderDashboard() {
-      const tbody = document.getElementById('dashboard-tbody');
-      tbody.innerHTML = '';
-
-      let grandTotal = 0;
-      let totalSetoranCount = 0;
-
-      dashboardData.forEach(item => {
-        grandTotal += item.total;
-        totalSetoranCount += item.count;
-
-        const safeName = escapeHTML(item.name);
-
-        const tr = document.createElement('tr');
-        tr.className = "border-b border-[#E9E9E7] hover:bg-[#F7F7F5]/80 transition-colors";
-        tr.innerHTML = `
-          <td class="py-3 px-4 font-medium text-[#37352F]">${safeName}</td>
-          <td class="py-3 px-4 text-right text-[#787774]">${formatRupiah(item.perTabungan)}</td>
-          <td class="py-3 px-4 text-right text-[#787774]">${item.count} Mgg</td>
-          <td class="py-3 px-4 text-right font-medium text-[#37352F]">${formatRupiah(item.total)}</td>
-          <td class="py-3 px-4 text-center">
-            <button onclick="inspectMember('${safeName.replace(/'/g, "\\'")}')" class="text-xs text-[#787774] hover:text-[#37352F] bg-white border border-[#E9E9E7] hover:bg-[#F7F7F5] px-2.5 py-1 rounded transition whitespace-nowrap">
-              Detail
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      document.getElementById('kpi-total-anggota').innerText = dashboardData.length + " Orang";
-      document.getElementById('kpi-total-saldo').innerText = formatRupiah(grandTotal);
-      document.getElementById('kpi-total-setoran').innerText = totalSetoranCount + " Kali";
-    }
-
-    function populateAdminDropdowns() {
-      const selectMember = document.getElementById('member-select');
-      const inputMember = document.getElementById('input-member');
-
-      selectMember.innerHTML = '';
-      inputMember.innerHTML = '';
-
-      dashboardData.forEach(item => {
-        const opt1 = document.createElement('option');
-        opt1.value = item.name;
-        opt1.textContent = item.name;
-        selectMember.appendChild(opt1);
-
-        const opt2 = document.createElement('option');
-        opt2.value = item.name;
-        opt2.textContent = item.name;
-        inputMember.appendChild(opt2);
-      });
-
-      // Reload detail if member tab is active
-      if(!document.getElementById('tab-member').classList.contains('hidden')) {
-        loadMemberDetail();
-      }
+      sessionStorage.clear();
+      location.reload();
     }
 
     function switchTab(tabName) {
       ['portal', 'dashboard', 'member', 'input'].forEach(t => {
         document.getElementById(`tab-${t}`).classList.add('hidden');
         const navBtn = document.getElementById(`nav-${t}`);
-        if (navBtn) {
-          navBtn.className = "nav-item px-3 py-1.5 rounded-md text-sm font-medium text-[#787774] hover:bg-[#F7F7F5] transition-all whitespace-nowrap hidden";
-        }
+        if (navBtn) navBtn.className = "nav-item px-3 py-1.5 rounded-md text-sm font-medium text-[#787774] hover:bg-[#F7F7F5] transition-all whitespace-nowrap hidden";
       });
-
       document.getElementById(`tab-${tabName}`).classList.remove('hidden');
       const activeNav = document.getElementById(`nav-${tabName}`);
-      if (activeNav) {
-        activeNav.className = "nav-item px-3 py-1.5 rounded-md text-sm font-medium bg-[#F7F7F5] text-[#37352F] transition-all whitespace-nowrap";
-      }
+      if (activeNav) activeNav.className = "nav-item px-3 py-1.5 rounded-md text-sm font-medium bg-[#F7F7F5] text-[#37352F] transition-all whitespace-nowrap";
     }
 
-    function inspectMember(memberName) {
-      document.getElementById('member-select').value = memberName;
-      switchTab('member');
-      loadMemberDetail();
+    /* ===== FITUR 1: GRAFIK CHART.JS (DASHBOARD ADMIN) ===== */
+    function drawChart() {
+      const ctx = document.getElementById('dashboardChart').getContext('2d');
+      if (chartInstance) chartInstance.destroy(); // Hancurkan chart lama jika ada
+
+      // Sortir data untuk chart (Top 10 Saldo Terbesar)
+      let chartData = [...dashboardData].sort((a, b) => b.total - a.total).slice(0, 10);
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: chartData.map(d => d.name),
+          datasets: [{
+            label: 'Total Saldo',
+            data: chartData.map(d => d.total),
+            backgroundColor: '#37352F',
+            borderRadius: 4,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 1500, easing: 'easeOutQuart' }, // Animasi Natural
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { callback: function(value) { return 'Rp ' + (value/1000) + 'k'; } } }
+          }
+        }
+      });
     }
 
-    function loadMemberDetail() {
-      const selectedName = document.getElementById('member-select').value;
-      const memberInfo = dashboardData.find(m => m.name === selectedName);
-      const totalVal = memberInfo ? memberInfo.total : 0;
-      document.getElementById('member-total-val').innerText = formatRupiah(totalVal);
-
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
-        callApi('getMemberDetails', { name: selectedName })
-          .then(renderMemberHistory)
-          .catch(err => console.error(err));
-      }
+    /* ===== FITUR 4: SORTING & PAGINASI LENGKAP ===== */
+    function doSort(array, config) {
+      return array.sort((a, b) => {
+        let valA = a[config.sortCol]; let valB = b[config.sortCol];
+        if (config.sortCol === 'date') { valA = new Date(valA).getTime(); valB = new Date(valB).getTime(); }
+        if (typeof valA === 'string') { valA = valA.toLowerCase(); valB = valB.toLowerCase(); }
+        if (valA < valB) return config.sortAsc ? -1 : 1;
+        if (valA > valB) return config.sortAsc ? 1 : -1;
+        return 0;
+      });
     }
 
-    function renderMemberHistory(rows) {
-      const tbody = document.getElementById('member-history-tbody');
+    function renderPaginatedTable(tbodyId, dataArray, config, rendererFunc, infoId) {
+      const tbody = document.getElementById(tbodyId);
       tbody.innerHTML = '';
+      
+      let filtered = dataArray;
+      if (config.query) {
+        filtered = filtered.filter(item => item.name.toLowerCase().includes(config.query.toLowerCase()));
+      }
+      
+      const sorted = doSort(filtered, config);
+      const start = (config.page - 1) * config.limit;
+      const paginated = sorted.slice(start, start + config.limit);
+      const totalPages = Math.ceil(filtered.length / config.limit) || 1;
 
-      if (!rows || rows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-[#787774]">Belum ada riwayat setoran.</td></tr>`;
-        return;
+      if (paginated.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-[#787774]">Data tidak ditemukan.</td></tr>`;
+      } else {
+        paginated.forEach(rendererFunc);
       }
 
-      rows.forEach((r) => {
+      if(document.getElementById(infoId)) {
+         document.getElementById(infoId).innerText = `Halaman ${config.page} dari ${totalPages}`;
+      }
+      config.totalPages = totalPages;
+    }
+
+    function prevPage(tab) { if(pagination[tab].page > 1) { pagination[tab].page--; reRenderTab(tab); } }
+    function nextPage(tab) { if(pagination[tab].page < pagination[tab].totalPages) { pagination[tab].page++; reRenderTab(tab); } }
+    function reRenderTab(tab) {
+      if(tab === 'dashboard') renderDashboard();
+      if(tab === 'portal') loadPortalData(true);
+      if(tab === 'member') loadMemberDetail(true);
+    }
+
+    // Sort Handlers
+    function sortDashboard(col) { pagination.dashboard.sortAsc = (pagination.dashboard.sortCol === col) ? !pagination.dashboard.sortAsc : true; pagination.dashboard.sortCol = col; renderDashboard(); }
+    function sortPortal(col) { pagination.portal.sortAsc = (pagination.portal.sortCol === col) ? !pagination.portal.sortAsc : true; pagination.portal.sortCol = col; loadPortalData(true); }
+    function sortMember(col) { pagination.member.sortAsc = (pagination.member.sortCol === col) ? !pagination.member.sortAsc : true; pagination.member.sortCol = col; loadMemberDetail(true); }
+    function filterDashboardTable() { pagination.dashboard.query = document.getElementById('search-input').value; pagination.dashboard.page = 1; renderDashboard(); }
+
+    /* DASHBOARD RENDERER */
+    function renderDashboard() {
+      let grandTotal = 0; let totalSetoranCount = 0;
+      dashboardData.forEach(item => { grandTotal += item.total; totalSetoranCount += item.count; });
+      document.getElementById('kpi-total-anggota').innerText = dashboardData.length + " Orang";
+      document.getElementById('kpi-total-saldo').innerText = formatRupiah(grandTotal);
+      document.getElementById('kpi-total-setoran').innerText = totalSetoranCount + " Kali";
+
+      renderPaginatedTable('dashboard-tbody', dashboardData, pagination.dashboard, (item) => {
+        const safeName = escapeHTML(item.name);
         const tr = document.createElement('tr');
-        tr.className = "border-b border-[#E9E9E7] hover:bg-[#F7F7F5]/80 transition-colors group";
-        const badgeStyle = r.type === 'Cash' ? 'bg-[#F1F1EF] text-[#37352F]' : 'bg-[#E8F3FB] text-[#2383E2]';
+        tr.className = "border-b border-[#E9E9E7] hover:bg-[#F7F7F5]/80 transition-colors";
+        tr.innerHTML = `<td class="py-3 px-4 font-medium text-[#37352F]">${safeName}</td>
+          <td class="py-3 px-4 text-right text-[#787774]">${formatRupiah(item.perTabungan)}</td>
+          <td class="py-3 px-4 text-right text-[#787774]">${item.count} Mgg</td>
+          <td class="py-3 px-4 text-right font-medium text-[#37352F]">${formatRupiah(item.total)}</td>
+          <td class="py-3 px-4 text-center"><button onclick="inspectMember('${safeName.replace(/'/g, "\\'")}')" class="text-xs text-[#787774] hover:text-[#37352F] bg-white border px-2.5 py-1 rounded">Detail</button></td>`;
+        document.getElementById('dashboard-tbody').appendChild(tr);
+      });
+      drawChart();
+    }
+
+    /* PORTAL RENDERER */
+    function loadPortalData(skipApi = false) {
+      if (!loggedMemberName) return;
+      const memberInfo = dashboardData.find(m => m.name === loggedMemberName);
+      document.getElementById('portal-total-saldo').innerText = formatRupiah(memberInfo ? memberInfo.total : 0);
+      document.getElementById('portal-total-setoran').innerText = (memberInfo ? memberInfo.count : 0) + " Minggu";
+
+      if(!skipApi) {
+        callApi('getMemberDetails', { name: loggedMemberName }).then(res => { portalData = res; renderPortalTable(); });
+      } else { renderPortalTable(); }
+    }
+    
+    function renderPortalTable() {
+      renderPaginatedTable('portal-history-tbody', portalData, pagination.portal, (r) => {
+        const tr = document.createElement('tr');
+        tr.className = "border-b border-[#E9E9E7] hover:bg-[#F7F7F5]/80";
+        tr.innerHTML = `<td class="py-3 px-4 font-medium text-[#787774]">${formatTanggalIndo(r.date)}</td>
+          <td class="py-3 px-4 font-medium text-[#37352F]">${escapeHTML(r.name)}</td>
+          <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[11px] font-medium bg-[#E8F3FB]">${escapeHTML(r.type)}</span></td>
+          <td class="py-3 px-4 text-right font-medium text-[#37352F]">${formatRupiah(r.amount)}</td>`;
+        document.getElementById('portal-history-tbody').appendChild(tr);
+      }, 'portal-page-info');
+    }
+
+    /* MEMBER ADMIN RENDERER */
+    function inspectMember(name) { document.getElementById('member-select').value = name; switchTab('member'); loadMemberDetail(); }
+    function populateAdminDropdowns() {
+      const select = document.getElementById('member-select'), input = document.getElementById('input-member');
+      select.innerHTML = ''; input.innerHTML = '';
+      dashboardData.forEach(i => {
+        select.appendChild(new Option(i.name, i.name)); input.appendChild(new Option(i.name, i.name));
+      });
+      if(!document.getElementById('tab-member').classList.contains('hidden')) loadMemberDetail();
+    }
+
+    function loadMemberDetail(skipApi = false) {
+      const selected = document.getElementById('member-select').value;
+      const info = dashboardData.find(m => m.name === selected);
+      document.getElementById('member-total-val').innerText = formatRupiah(info ? info.total : 0);
+
+      if(!skipApi) {
+        callApi('getMemberDetails', { name: selected }).then(res => { memberData = res; renderMemberTable(); });
+      } else { renderMemberTable(); }
+    }
+
+    function renderMemberTable() {
+      renderPaginatedTable('member-history-tbody', memberData, pagination.member, (r) => {
+        const tr = document.createElement('tr');
+        tr.className = "border-b border-[#E9E9E7] hover:bg-[#F7F7F5]/80";
         const safeName = escapeHTML(r.name);
-        
-        tr.innerHTML = `
-          <td class="py-3 px-4 font-medium text-[#787774]">${escapeHTML(r.date)}</td>
+        tr.innerHTML = `<td class="py-3 px-4 font-medium text-[#787774]">${formatTanggalIndo(r.date)}</td>
           <td class="py-3 px-4 font-medium text-[#37352F]">${safeName}</td>
-          <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[11px] font-medium ${badgeStyle}">${escapeHTML(r.type)}</span></td>
+          <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[11px] bg-[#F1F1EF]">${escapeHTML(r.type)}</span></td>
           <td class="py-3 px-4 text-right font-medium text-[#37352F]">${formatRupiah(r.amount)}</td>
-          <td class="py-3 px-4 text-center">
-            <div class="flex items-center justify-center space-x-2">
-              <button onclick="openEditModal(${r.rowIndex}, '${escapeHTML(r.date)}', '${safeName.replace(/'/g, "\\'")}', '${escapeHTML(r.type)}', ${r.amount})" class="w-7 h-7 flex items-center justify-center rounded bg-white border border-[#E9E9E7] text-[#787774] hover:bg-[#F7F7F5] hover:text-[#37352F] transition" title="Edit Data">
-                <i class="fa-solid fa-pen text-[11px]"></i>
-              </button>
-              <button onclick="deleteSetoranItem(${r.rowIndex}, '${escapeHTML(r.date)}', '${safeName.replace(/'/g, "\\'")}', ${r.amount})" class="w-7 h-7 flex items-center justify-center rounded bg-white border border-[#E9E9E7] text-[#EB5757]/70 hover:bg-[#F7F7F5] hover:text-[#EB5757] transition" title="Hapus Data">
-                <i class="fa-solid fa-trash text-[11px]"></i>
-              </button>
-            </div>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+          <td class="py-3 px-4 text-center no-print">
+            <button onclick="openEditModal(${r.rowIndex}, '${r.date}', '${safeName}', '${r.type}', ${r.amount})" class="w-7 h-7 bg-white border rounded"><i class="fa-solid fa-pen text-[11px]"></i></button>
+            <button onclick="deleteSetoranItem(${r.rowIndex}, '${r.date}', '${safeName}', ${r.amount})" class="w-7 h-7 bg-white border rounded text-[#EB5757]/70"><i class="fa-solid fa-trash text-[11px]"></i></button>
+          </td>`;
+        document.getElementById('member-history-tbody').appendChild(tr);
+      }, 'member-page-info');
     }
 
-    function openEditModal(rowIndex, date, name, type, amount) {
-      document.getElementById('edit-row-index').value = rowIndex;
-      document.getElementById('edit-original-date').value = date;
-      document.getElementById('edit-date').value = date;
-      document.getElementById('edit-member').value = name;
-      document.getElementById('edit-payment-type').value = type;
-      document.getElementById('edit-amount').value = amount;
-      document.getElementById('modal-edit').classList.remove('hidden');
-    }
-
-    function closeEditModal() {
-      document.getElementById('modal-edit').classList.add('hidden');
-    }
-
-    function handleEditSubmit(event) {
-      event.preventDefault();
-      const btn = document.getElementById('btn-save-edit');
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
-
-      const payload = {
-        rowIndex: parseInt(document.getElementById('edit-row-index').value),
-        originalDate: document.getElementById('edit-original-date').value,
-        date: document.getElementById('edit-date').value,
-        name: document.getElementById('edit-member').value,
-        type: document.getElementById('edit-payment-type').value,
-        amount: parseFloat(document.getElementById('edit-amount').value)
-      };
-
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
-        callApi('updateSetoran', payload)
-          .then(() => {
-            btn.disabled = false;
-            btn.innerHTML = `Simpan`;
-            closeEditModal();
-            showToast("Setoran berhasil diperbarui!", "success");
-            
-            // Segarkan data dashboard dan history anggota spesifik
-            callApi('getDashboardData').then(data => {
-               onDataLoaded(data);
-               loadMemberDetail();
-            });
-          })
-          .catch(err => {
-            btn.disabled = false;
-            btn.innerHTML = `Simpan`;
-            showToast("Gagal mengedit data: " + err.message, "error");
-          });
-      }
-    }
-
-    function deleteSetoranItem(rowIndex, date, name, amount) {
-      if (!confirm(`Hapus setoran ${name} sebesar ${formatRupiah(amount)} pada ${date}?`)) {
-        return;
-      }
-
-      const payload = {
-        rowIndex: rowIndex,
-        date: date,
-        name: name
-      };
-
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
-        callApi('deleteSetoran', payload)
-          .then(() => {
-            showToast("Setoran dihapus!", "success");
-            
-            // Segarkan data dashboard dan history anggota spesifik
-            callApi('getDashboardData').then(data => {
-               onDataLoaded(data);
-               loadMemberDetail();
-            });
-          })
-          .catch(err => showToast("Gagal menghapus data: " + err.message, "error"));
-      }
-    }
-
-    function filterDashboardTable() {
-      const query = document.getElementById('search-input').value.toLowerCase();
-      const rows = document.querySelectorAll('#dashboard-tbody tr');
-
-      rows.forEach(row => {
-        const nameText = row.children[0].textContent.toLowerCase();
-        row.style.display = nameText.includes(query) ? '' : 'none';
-      });
-    }
-
-    function handleFormSubmit(event) {
-      event.preventDefault();
-      const btn = document.getElementById('btn-submit');
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
-
-      const payload = {
+    /* ===== CRUD ACTIONS ===== */
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-submit'); btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+      // Konversi Format Rupiah kembali ke angka murni untuk dikirim ke Backend
+      const rawAmount = getUnmaskedValue(document.getElementById('input-amount').value);
+      
+      callApi('addSetoran', {
         date: document.getElementById('input-date').value,
         name: document.getElementById('input-member').value,
         type: document.getElementById('input-payment-type').value,
-        amount: parseFloat(document.getElementById('input-amount').value)
-      };
+        amount: rawAmount
+      }).then(() => {
+        btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-arrow-up text-xs"></i><span>Simpan Data</span>`;
+        showToast("Setoran disimpan!", "success"); document.getElementById('form-setoran').reset(); document.getElementById('input-date').value = new Date().toISOString().substring(0, 10);
+        callApi('getDashboardData').then(onDataLoaded);
+      }).catch(err => { btn.disabled = false; btn.innerHTML = `Simpan Data`; showToast(err.message, "error"); });
+    }
 
-      if (SCRIPT_URL && SCRIPT_URL !== "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") {
-        callApi('addSetoran', payload)
-          .then(() => {
-            btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-arrow-up text-xs"></i><span>Simpan Data</span>`;
-            showToast("Setoran berhasil disimpan!", "success");
-            
-            // Reset form dan ambil ulang data Dashboard
-            document.getElementById('form-setoran').reset();
-            document.getElementById('input-date').value = new Date().toISOString().substring(0, 10);
-            
-            callApi('getDashboardData').then(onDataLoaded);
-          })
-          .catch(err => {
-            btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-arrow-up text-xs"></i><span>Simpan Data</span>`;
-            showToast("Gagal menyimpan: " + err.message, "error");
-          });
+    function openEditModal(row, date, name, type, amount) {
+      document.getElementById('edit-row-index').value = row; document.getElementById('edit-date').value = date; document.getElementById('edit-original-date').value = date;
+      document.getElementById('edit-member').value = name; document.getElementById('edit-payment-type').value = type; 
+      // Masukkan nominal edit yang diubah ke Format Ribuan
+      document.getElementById('edit-amount').value = new Intl.NumberFormat('id-ID').format(amount);
+      document.getElementById('modal-edit').classList.remove('hidden');
+    }
+    
+    function closeEditModal() { document.getElementById('modal-edit').classList.add('hidden'); }
+
+    function handleEditSubmit(e) {
+      e.preventDefault();
+      const rawAmount = getUnmaskedValue(document.getElementById('edit-amount').value);
+      callApi('updateSetoran', {
+        rowIndex: parseInt(document.getElementById('edit-row-index').value), originalDate: document.getElementById('edit-original-date').value,
+        date: document.getElementById('edit-date').value, name: document.getElementById('edit-member').value, type: document.getElementById('edit-payment-type').value, amount: rawAmount
+      }).then(() => { closeEditModal(); showToast("Diperbarui!", "success"); callApi('getDashboardData').then(data => { onDataLoaded(data); loadMemberDetail(); }); });
+    }
+
+    function deleteSetoranItem(row, date, name, amount) {
+      if(confirm(`Hapus setoran ${name} (Rp ${amount})?`)) {
+        callApi('deleteSetoran', { rowIndex: row, date: date, name: name }).then(() => {
+          showToast("Dihapus!", "success"); callApi('getDashboardData').then(data => { onDataLoaded(data); loadMemberDetail(); });
+        });
       }
     }
 
-    function showToast(message, type = 'success') {
-      const toast = document.getElementById('toast');
-      const icon = document.getElementById('toast-icon');
-      const msg = document.getElementById('toast-msg');
-
-      msg.innerText = message;
-      if (type === 'success') {
-        toast.className = "fixed bottom-5 right-5 px-4 py-3 rounded-lg shadow-[0_5px_15px_rgba(0,0,0,0.1)] text-white font-medium text-sm flex items-center space-x-3 bg-[#37352F] transition-all z-50";
-        icon.className = "fa-solid fa-circle-check text-[#73A05F]";
-      } else {
-        toast.className = "fixed bottom-5 right-5 px-4 py-3 rounded-lg shadow-[0_5px_15px_rgba(0,0,0,0.1)] text-white font-medium text-sm flex items-center space-x-3 bg-[#EB5757] transition-all z-50";
-        icon.className = "fa-solid fa-circle-exclamation text-white";
-      }
-
-      toast.classList.remove('hidden');
-      setTimeout(() => {
-        toast.classList.add('hidden');
-      }, 3500);
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast'), i = document.getElementById('toast-icon');
+      document.getElementById('toast-msg').innerText = msg;
+      t.className = `fixed bottom-5 right-5 px-4 py-3 rounded-lg shadow-lg text-white font-medium text-sm flex items-center space-x-3 transition-all z-50 ${type === 'success' ? 'bg-[#37352F]' : 'bg-[#EB5757]'}`;
+      i.className = type === 'success' ? 'fa-solid fa-circle-check text-[#73A05F]' : 'fa-solid fa-circle-exclamation text-white';
+      t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 3500);
     }
+    
+    function openChangeNameModal() { document.getElementById('name-current').value = loggedMemberName; document.getElementById('name-new').value = ''; document.getElementById('name-pin').value = ''; document.getElementById('modal-change-name').classList.remove('hidden'); }
+    function closeChangeNameModal() { document.getElementById('modal-change-name').classList.add('hidden'); }
+    function handleChangeNameSubmit(e) { e.preventDefault(); callApi('changeMemberName', { oldName: loggedMemberName, newName: document.getElementById('name-new').value, currentPin: document.getElementById('name-pin').value }).then(res => { closeChangeNameModal(); sessionStorage.setItem('tb_name', res.newName); initSession(currentRole, res.newName); showToast("Nama diubah!", "success"); }); }
+    function openChangePinModal() { document.getElementById('form-change-pin').reset(); document.getElementById('modal-change-pin').classList.remove('hidden'); }
+    function closeChangePinModal() { document.getElementById('modal-change-pin').classList.add('hidden'); }
+    function handleChangePinSubmit(e) { e.preventDefault(); if(document.getElementById('pin-new').value !== document.getElementById('pin-confirm').value) return showToast("PIN tidak cocok", "error"); callApi('changeMemberPin', { name: loggedMemberName, currentPin: document.getElementById('pin-current').value, newPin: document.getElementById('pin-new').value }).then(() => { closeChangePinModal(); showToast("PIN diubah!", "success"); }); }
   </script>
 </body>
 </html>
