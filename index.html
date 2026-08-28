@@ -491,7 +491,7 @@
 
     /* ===== KONEKSI API & AUTENTIKASI ===== */
     async function callApi(action, payload = {}) {
-      if (!SCRIPT_URL || SCRIPT_URL === "URL_WEB_APP_GOOGLE_SCRIPT_ANDA_YANG_BARU") throw new Error("URL Web App belum disetting!");
+      if (!SCRIPT_URL || SCRIPT_URL === "https://script.google.com/macros/s/AKfycbzJe2D65fh59nAqeE1Qr-h1r_hzz2Rz6BxXhtoLzxv9xPrp1P6X1yJYLLIkKDSwp5aK/exec") throw new Error("URL Web App belum disetting!");
       payload.action = action;
       const response = await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
       const result = await response.json();
