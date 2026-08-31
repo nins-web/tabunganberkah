@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tabungan Berkah</title>
   
-  <!-- Favicon (Icon Tab Browser) diganti ke TB Mini Logo -->
+  <!-- Favicon (Icon Tab Browser) -->
   <link rel="icon" type="image/png" href="TB Mini Logo.png">
   
   <!-- Google Fonts: Inter (Notion Style) -->
@@ -65,7 +65,7 @@
       <div class="text-center space-y-2">
         <!-- Logo di halaman Login -->
         <img src="TB Mini Logo.png" alt="Logo Tabungan Berkah" class="w-24 h-24 mx-auto mb-4 object-contain" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2830/2830284.png';">
-        <h1 class="text-xl sm:text-2xl font-extrabold text-slate-600">Tabungan Berkah</h1>
+        <h1 class="text-2xl font-semibold text-notion-text">Tabungan Berkah</h1>
         <p class="text-sm text-notion-muted">Silakan masuk sesuai dengan hak akses Anda</p>
       </div>
 
@@ -202,6 +202,9 @@
             <button onclick="openChangePinModal()" class="px-3 py-1.5 bg-notion-bg border border-notion-border hover:bg-notion-hover text-notion-text rounded text-xs font-medium transition flex items-center">
               <i class="fa-solid fa-lock mr-1.5 text-notion-muted"></i> Ganti PIN
             </button>
+            <button onclick="refreshPortalData()" class="px-3 py-1.5 bg-notion-bg border border-notion-border hover:bg-notion-hover text-notion-text rounded text-xs font-medium transition">
+              Refresh
+            </button>
           </div>
 
           <!-- Metrik Callout Blocks -->
@@ -248,6 +251,12 @@
         <section id="tab-dashboard" class="space-y-8 hidden animate-fade-in">
           
           <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="text-4xl">📈</div>
+              <button onclick="refreshDashboardData()" class="px-3 py-1.5 bg-notion-bg border border-notion-border hover:bg-notion-hover text-notion-text rounded text-xs font-medium transition">
+                Refresh
+              </button>
+            </div>
             <h1 class="text-3xl font-bold tracking-tight text-notion-text">Dashboard</h1>
             <p class="text-notion-muted mt-2 text-sm border-b border-notion-border pb-4">Ringkasan statistik dan rekapitulasi seluruh anggota Tabungan Berkah.</p>
           </div>
@@ -301,6 +310,12 @@
         <!-- TAB 2: KELOLA DETAIL ANGGOTA (ADMIN) -->
         <section id="tab-member" class="space-y-8 hidden animate-fade-in">
           <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="text-4xl">⚙️</div>
+              <button onclick="refreshMemberData()" class="px-3 py-1.5 bg-notion-bg border border-notion-border hover:bg-notion-hover text-notion-text rounded text-xs font-medium transition">
+                Refresh
+              </button>
+            </div>
             <h1 class="text-3xl font-bold tracking-tight text-notion-text">Kelola Detail</h1>
             <p class="text-notion-muted mt-2 text-sm border-b border-notion-border pb-4">Lihat riwayat spesifik anggota, edit, atau hapus transaksi setoran.</p>
           </div>
@@ -347,7 +362,12 @@
         <!-- TAB 3: INPUT SETORAN (ADMIN) -->
         <section id="tab-input" class="space-y-8 hidden animate-fade-in max-w-2xl">
           <div>
-            <div class="text-4xl mb-3">📝</div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="text-4xl">📝</div>
+              <button onclick="refreshInputData()" class="px-3 py-1.5 bg-notion-bg border border-notion-border hover:bg-notion-hover text-notion-text rounded text-xs font-medium transition">
+                Refresh
+              </button>
+            </div>
             <h1 class="text-3xl font-bold tracking-tight text-notion-text">Input Setoran</h1>
             <p class="text-notion-muted mt-2 text-sm border-b border-notion-border pb-4">Tambahkan entri data setoran tabungan baru ke database.</p>
           </div>
@@ -602,9 +622,29 @@
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('input-date').value = new Date().toISOString().substring(0, 10);
 
-      // Loading State for Dropdown
+      // Restore data cache jika tersedia
+      const cachedData = localStorage.getItem('tb_dashboard_cache');
+      if (cachedData) {
+        try {
+          dashboardData = JSON.parse(cachedData);
+        } catch(e) {}
+      }
+
       const select = document.getElementById('login-member-select');
       select.innerHTML = '<option>Memuat data...</option>';
+
+      populateLoginMemberDropdown();
+
+      // Restore sesi login jika ada
+      const savedSession = localStorage.getItem('tb_session');
+      if (savedSession) {
+        try {
+          const sess = JSON.parse(savedSession);
+          if (sess && sess.role) {
+            initSession(sess.role, sess.name);
+          }
+        } catch(e) {}
+      }
 
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run.withSuccessHandler(onDataLoaded).getDashboardData();
@@ -614,8 +654,17 @@
     function onDataLoaded(data) {
       if (data && data.length > 0) {
         dashboardData = data;
+        try {
+          localStorage.setItem('tb_dashboard_cache', JSON.stringify(data));
+        } catch(e) {}
       }
       populateLoginMemberDropdown();
+      if (currentRole === 'admin') {
+        renderDashboard();
+        populateAdminDropdowns();
+      } else if (currentRole === 'anggota') {
+        loadPortalData();
+      }
     }
 
     function populateLoginMemberDropdown() {
@@ -700,6 +749,10 @@
       currentRole = role;
       loggedMemberName = name;
 
+      try {
+        localStorage.setItem('tb_session', JSON.stringify({ role: role, name: name }));
+      } catch(e) {}
+
       document.getElementById('screen-login').classList.add('hidden');
       document.getElementById('screen-app').classList.remove('hidden');
 
@@ -732,6 +785,11 @@
     function logout() {
       currentRole = null;
       loggedMemberName = null;
+
+      try {
+        localStorage.removeItem('tb_session');
+      } catch(e) {}
+
       document.getElementById('login-member-pin').value = '';
       document.getElementById('login-admin-pin').value = '';
       document.getElementById('screen-app').classList.add('hidden');
@@ -741,6 +799,48 @@
 
     function formatRupiah(number) {
       return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number || 0);
+    }
+
+    /* REFRESH FUNCTIONS MANDIRI */
+    function refreshPortalData() {
+      showToast("Memuat ulang data...", "success");
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(data => {
+          onDataLoaded(data);
+          showToast("Data berhasil diperbarui", "success");
+        }).getDashboardData();
+      }
+    }
+
+    function refreshDashboardData() {
+      showToast("Memuat ulang dashboard...", "success");
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(data => {
+          onDataLoaded(data);
+          showToast("Dashboard berhasil diperbarui", "success");
+        }).getDashboardData();
+      }
+    }
+
+    function refreshMemberData() {
+      showToast("Memuat ulang data anggota...", "success");
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(data => {
+          onDataLoaded(data);
+          loadMemberDetail();
+          showToast("Data anggota berhasil diperbarui", "success");
+        }).getDashboardData();
+      }
+    }
+
+    function refreshInputData() {
+      showToast("Memuat ulang data...", "success");
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(data => {
+          onDataLoaded(data);
+          showToast("Data berhasil diperbarui", "success");
+        }).getDashboardData();
+      }
     }
 
     /* MEMBER PORTAL, GANTI NAMA, & GANTI PIN */
@@ -778,6 +878,10 @@
             closeChangeNameModal();
             
             loggedMemberName = res.newName;
+            try {
+              localStorage.setItem('tb_session', JSON.stringify({ role: currentRole, name: res.newName }));
+            } catch(e) {}
+
             document.getElementById('portal-user-name').innerText = res.newName;
             document.getElementById('user-role-badge').innerText = res.newName;
             
@@ -865,7 +969,6 @@
 
       rows.forEach(r => {
         const tr = document.createElement('tr');
-        // Notion style badges: muted background
         const badgeHTML = r.type === 'Cash' 
           ? `<span class="bg-gray-100 border border-gray-200 text-gray-700 px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide">Cash</span>` 
           : `<span class="bg-blue-50 border border-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide">Transfer</span>`;
@@ -937,37 +1040,31 @@
     }
 
     function switchTab(tabName) {
-      // 1. Hide all content sections
       ['portal', 'dashboard', 'member', 'input'].forEach(t => {
         const el = document.getElementById(`tab-${t}`);
         if(el) el.classList.add('hidden');
       });
 
-      // 2. Reset Desktop Nav classes
       document.querySelectorAll('aside .nav-item').forEach(el => {
         el.classList.remove('bg-notion-hover', 'text-notion-text');
         el.classList.add('text-notion-muted');
       });
 
-      // 3. Reset Mobile Nav classes
       document.querySelectorAll('.md\\:hidden .nav-item').forEach(el => {
         el.classList.remove('bg-white', 'border-notion-border', 'text-notion-text', 'shadow-sm');
         el.classList.add('text-notion-muted');
-        el.style.border = 'none'; // reset
+        el.style.border = 'none';
       });
 
-      // Show active content
       const contentEl = document.getElementById(`tab-${tabName}`);
       if(contentEl) contentEl.classList.remove('hidden');
 
-      // Set Desktop Nav Active
       const activeDesktop = document.getElementById(`nav-${tabName}`);
       if (activeDesktop) {
         activeDesktop.classList.remove('text-notion-muted');
         activeDesktop.classList.add('bg-notion-hover', 'text-notion-text');
       }
 
-      // Set Mobile Nav Active
       const activeMobile = document.getElementById(`nav-${tabName}-mobile`);
       if (activeMobile) {
         activeMobile.classList.remove('text-notion-muted');
@@ -1150,7 +1247,6 @@
 
       msg.innerText = message;
       
-      // Notion style toasts
       if (type === 'success') {
         toast.className = "fixed bottom-4 right-4 sm:bottom-6 sm:right-6 px-4 py-3 rounded border shadow-lg font-medium text-sm flex items-center space-x-3 transition-all z-50 min-w-[250px] bg-white border-notion-border text-notion-text";
         icon.className = "text-green-500 fa-solid fa-circle-check";
