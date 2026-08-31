@@ -5,380 +5,440 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tabungan Berkah</title>
   
-  <!-- Google Fonts: Plus Jakarta Sans -->
+  <!-- Google Fonts: Inter (Notion Style) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <style>
-    body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  <!-- Tailwind Configuration for Notion Theme -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+          },
+          colors: {
+            notion: {
+              bg: '#ffffff',
+              sidebar: '#f7f7f5',
+              text: '#37352f',
+              muted: '#787774',
+              border: '#e9e9e7',
+              hover: '#efefef',
+              blue: '#2383e2',
+              red: '#eb5757',
+              bgHover: '#f1f1ef',
+            }
+          }
+        }
+      }
     }
+  </script>
+
+  <style>
+    /* Custom Scrollbar Notion Style */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #d3d1cb; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #aeaca6; }
+    
+    /* Utility to hide input arrows */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
+<body class="bg-notion-bg text-notion-text antialiased min-h-screen font-sans selection:bg-[rgba(35,131,226,0.28)]">
 
   <!-- SCREEN 1: LOGIN HAK AKSES -->
-  <div id="screen-login" class="min-h-screen flex items-center justify-center p-4 bg-emerald-900/10">
-    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-md w-full p-6 sm:p-8 space-y-6">
+  <div id="screen-login" class="min-h-screen flex flex-col items-center justify-center p-4 bg-notion-bg">
+    <div class="max-w-[400px] w-full space-y-8">
       
       <div class="text-center space-y-2">
-        <div class="w-14 h-14 bg-emerald-700 text-white rounded-2xl flex items-center justify-center mx-auto shadow-md">
-          <i class="fa-solid fa-wallet text-2xl"></i>
-        </div>
-        <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900">Tabungan Berkah</h1>
-        <p class="text-xs sm:text-sm text-slate-500">Silakan masuk sesuai dengan hak akses Anda</p>
+        <div class="text-5xl mb-4">🏦</div>
+        <h1 class="text-2xl font-semibold text-notion-text">Tabungan Berkah</h1>
+        <p class="text-sm text-notion-muted">Silakan masuk sesuai dengan hak akses Anda</p>
       </div>
 
       <!-- Tab Switch: Anggota vs Admin -->
-      <div class="flex bg-slate-100 p-1 rounded-xl text-xs sm:text-sm font-semibold">
-        <button type="button" onclick="setLoginRole('anggota')" id="btn-role-anggota" class="flex-1 py-2 rounded-lg bg-emerald-700 text-white shadow-sm transition">
-          <i class="fa-solid fa-user mr-1.5"></i> Anggota
+      <div class="flex bg-notion-sidebar p-1 rounded-md text-sm font-medium border border-notion-border">
+        <button type="button" onclick="setLoginRole('anggota')" id="btn-role-anggota" class="flex-1 py-1.5 rounded bg-white text-notion-text shadow-sm transition">
+          <i class="fa-regular fa-user mr-1.5"></i> Anggota
         </button>
-        <button type="button" onclick="setLoginRole('admin')" id="btn-role-admin" class="flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition">
-          <i class="fa-solid fa-user-shield mr-1.5"></i> Admin / Pengurus
+        <button type="button" onclick="setLoginRole('admin')" id="btn-role-admin" class="flex-1 py-1.5 rounded text-notion-muted hover:text-notion-text transition">
+          <i class="fa-solid fa-shield-halved mr-1.5"></i> Admin
         </button>
       </div>
 
       <!-- Form Login Anggota -->
       <form id="form-login-anggota" onsubmit="handleLoginAnggota(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Pilih Nama Anda</label>
-          <select id="login-member-select" required class="w-full border border-slate-300 rounded-lg p-2.5 text-xs sm:text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          <label class="block text-xs font-medium text-notion-muted mb-1.5">Nama Anggota</label>
+          <select id="login-member-select" required class="w-full border border-notion-border rounded p-2 text-sm focus:border-notion-blue focus:ring-1 focus:ring-notion-blue outline-none transition bg-notion-sidebar/50">
           </select>
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">PIN Anggota Pribadi</label>
-          <input type="password" id="login-member-pin" placeholder="Masukkan PIN Anda" required class="w-full border border-slate-300 rounded-lg p-2.5 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          <label class="block text-xs font-medium text-notion-muted mb-1.5">PIN Pribadi</label>
+          <input type="password" id="login-member-pin" placeholder="Masukkan PIN" required class="w-full border border-notion-border rounded p-2 text-sm focus:border-notion-blue focus:ring-1 focus:ring-notion-blue outline-none transition">
         </div>
-        <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-lg text-xs sm:text-sm transition flex items-center justify-center space-x-2">
-          <span>Masuk Portal Tabungan</span>
-          <i class="fa-solid fa-arrow-right"></i>
+        <button type="submit" class="w-full bg-[#2383e2] hover:bg-[#1d6bba] text-white font-medium py-2 rounded text-sm transition mt-2">
+          Masuk Portal
         </button>
       </form>
 
       <!-- Form Login Admin -->
       <form id="form-login-admin" onsubmit="handleLoginAdmin(event)" class="space-y-4 hidden">
         <div>
-          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">PIN Keamanan Admin</label>
-          <input type="password" id="login-admin-pin" placeholder="Masukkan PIN Admin" required class="w-full border border-slate-300 rounded-lg p-2.5 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          <label class="block text-xs font-medium text-notion-muted mb-1.5">PIN Keamanan Admin</label>
+          <input type="password" id="login-admin-pin" placeholder="Masukkan PIN Admin" required class="w-full border border-notion-border rounded p-2 text-sm focus:border-notion-blue focus:ring-1 focus:ring-notion-blue outline-none transition">
         </div>
-        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-lg text-xs sm:text-sm transition flex items-center justify-center space-x-2">
-          <span>Masuk Dashboard Admin</span>
-          <i class="fa-solid fa-shield-halved"></i>
+        <button type="submit" class="w-full bg-notion-text hover:bg-black text-white font-medium py-2 rounded text-sm transition mt-2">
+          Masuk Dashboard
         </button>
       </form>
 
     </div>
   </div>
 
-  <!-- SCREEN 2: APLIKASI UTAMA -->
-  <div id="screen-app" class="hidden">
+  <!-- SCREEN 2: APLIKASI UTAMA (Notion Layout) -->
+  <div id="screen-app" class="hidden flex h-screen w-full overflow-hidden">
     
-    <!-- Header Navigation -->
-    <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-40">
-      <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-0 sm:h-16 flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-0">
-        
-        <div class="flex items-center space-x-2.5 w-full sm:w-auto justify-between sm:justify-start">
-          <div class="flex items-center space-x-2.5">
-            <div class="bg-emerald-800 p-1.5 sm:p-2 rounded-lg text-emerald-300">
-              <i class="fa-solid fa-wallet text-base sm:text-xl"></i>
-            </div>
-            <div>
-              <h1 class="font-bold text-base sm:text-lg leading-tight">Tabungan Berkah</h1>
-              <p class="text-[10px] sm:text-xs text-emerald-200" id="user-role-badge">Session</p>
-            </div>
-          </div>
-          <button onclick="logout()" class="sm:hidden text-xs bg-emerald-900/60 px-2.5 py-1 rounded-md text-emerald-100 font-medium">
-            <i class="fa-solid fa-right-from-bracket"></i> Keluar
-          </button>
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-notion-sidebar border-r border-notion-border flex-shrink-0 flex flex-col hidden md:flex transition-all duration-300">
+      
+      <!-- Workspace Selector -->
+      <div class="px-4 py-4 border-b border-notion-border/50 hover:bg-notion-hover cursor-pointer transition flex items-center space-x-2">
+        <div class="w-5 h-5 rounded bg-white shadow-sm border border-notion-border flex items-center justify-center text-[10px]">
+          🏦
         </div>
-
-        <div class="flex items-center space-x-1 sm:space-x-2 w-full sm:w-auto justify-between sm:justify-start overflow-x-auto">
-          <button onclick="switchTab('portal')" id="nav-portal" class="nav-item px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold bg-emerald-800 text-white transition whitespace-nowrap hidden">
-            <i class="fa-solid fa-user-check mr-1"></i> Tabungan Saya
-          </button>
-
-          <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-emerald-100 hover:bg-emerald-600 transition whitespace-nowrap hidden">
-            <i class="fa-solid fa-chart-line mr-1"></i> Dashboard
-          </button>
-          <button onclick="switchTab('member')" id="nav-member" class="nav-item px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-emerald-100 hover:bg-emerald-600 transition whitespace-nowrap hidden">
-            <i class="fa-solid fa-users-gear mr-1"></i> Kelola Detail
-          </button>
-          <button onclick="switchTab('input')" id="nav-input" class="nav-item px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-emerald-100 hover:bg-emerald-600 transition whitespace-nowrap hidden">
-            <i class="fa-solid fa-plus-circle mr-1"></i> Input
-          </button>
-
-          <button onclick="logout()" class="hidden sm:inline-flex items-center space-x-1.5 bg-emerald-900 hover:bg-emerald-950 px-3 py-1.5 rounded-lg text-xs text-emerald-100 font-semibold transition ml-2">
-            <i class="fa-solid fa-right-from-bracket"></i>
-            <span>Keluar</span>
-          </button>
-        </div>
-
+        <div class="flex-1 truncate font-medium text-sm">Tabungan Berkah</div>
+        <i class="fa-solid fa-chevron-down text-xs text-notion-muted"></i>
       </div>
-    </header>
 
-    <!-- Main Content Container -->
-    <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <!-- User Session Info -->
+      <div class="px-4 py-2 mt-2">
+        <p class="text-[11px] font-medium text-notion-muted uppercase tracking-wider mb-1">Akun Saat Ini</p>
+        <div class="flex items-center space-x-2 text-sm">
+          <div class="w-6 h-6 rounded bg-notion-blue text-white flex items-center justify-center text-xs"><i class="fa-solid fa-user"></i></div>
+          <span class="truncate font-medium" id="user-role-badge">Session</span>
+        </div>
+      </div>
 
-      <!-- MENU KHUSUS ANGGOTA -->
-      <section id="tab-portal" class="space-y-4 sm:space-y-6 hidden">
-        <div class="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-xl p-5 sm:p-6 text-white shadow-md flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+      <!-- Navigation Links -->
+      <nav class="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto">
+        <button onclick="switchTab('portal')" id="nav-portal" class="nav-item w-full flex items-center space-x-2 px-3 py-1.5 rounded-md text-sm font-medium bg-notion-hover text-notion-text transition hidden">
+          <i class="fa-regular fa-user text-notion-muted w-4 text-center"></i>
+          <span>Tabungan Saya</span>
+        </button>
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center space-x-2 px-3 py-1.5 rounded-md text-sm text-notion-muted hover:bg-notion-hover hover:text-notion-text transition hidden">
+          <i class="fa-solid fa-chart-line text-notion-muted w-4 text-center"></i>
+          <span>Dashboard</span>
+        </button>
+        <button onclick="switchTab('member')" id="nav-member" class="nav-item w-full flex items-center space-x-2 px-3 py-1.5 rounded-md text-sm text-notion-muted hover:bg-notion-hover hover:text-notion-text transition hidden">
+          <i class="fa-solid fa-users text-notion-muted w-4 text-center"></i>
+          <span>Kelola Anggota</span>
+        </button>
+        <button onclick="switchTab('input')" id="nav-input" class="nav-item w-full flex items-center space-x-2 px-3 py-1.5 rounded-md text-sm text-notion-muted hover:bg-notion-hover hover:text-notion-text transition hidden">
+          <i class="fa-regular fa-square-plus text-notion-muted w-4 text-center"></i>
+          <span>Input Setoran</span>
+        </button>
+      </nav>
+
+      <!-- Logout -->
+      <div class="p-2 border-t border-notion-border">
+        <button onclick="logout()" class="w-full flex items-center space-x-2 px-3 py-1.5 rounded-md text-sm text-notion-muted hover:bg-notion-hover hover:text-notion-text transition">
+          <i class="fa-solid fa-arrow-right-from-bracket w-4 text-center"></i>
+          <span>Keluar</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-notion-bg">
+      
+      <!-- Mobile Header -->
+      <header class="md:hidden flex items-center justify-between p-3 border-b border-notion-border bg-notion-bg z-10">
+        <div class="flex items-center space-x-2">
+          <span class="text-lg">🏦</span>
+          <span class="font-medium text-sm">Tabungan Berkah</span>
+        </div>
+        <button onclick="logout()" class="text-notion-muted text-sm"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+      </header>
+
+      <!-- Mobile Top Navigation Strip -->
+      <div class="md:hidden flex overflow-x-auto border-b border-notion-border bg-notion-sidebar/50 px-2 py-1 space-x-1 custom-scrollbar">
+        <button onclick="switchTab('portal')" id="nav-portal-mobile" class="nav-item whitespace-nowrap px-3 py-1.5 rounded text-xs font-medium bg-white shadow-sm border border-notion-border text-notion-text hidden">Tabungan Saya</button>
+        <button onclick="switchTab('dashboard')" id="nav-dashboard-mobile" class="nav-item whitespace-nowrap px-3 py-1.5 rounded text-xs text-notion-muted hidden">Dashboard</button>
+        <button onclick="switchTab('member')" id="nav-member-mobile" class="nav-item whitespace-nowrap px-3 py-1.5 rounded text-xs text-notion-muted hidden">Kelola</button>
+        <button onclick="switchTab('input')" id="nav-input-mobile" class="nav-item whitespace-nowrap px-3 py-1.5 rounded text-xs text-notion-muted hidden">Input</button>
+      </div>
+
+      <!-- Scrollable Canvas -->
+      <div class="flex-1 overflow-y-auto p-4 sm:p-8 lg:p-12 w-full max-w-5xl mx-auto custom-scrollbar pb-24">
+        
+        <!-- MENU KHUSUS ANGGOTA -->
+        <section id="tab-portal" class="space-y-8 hidden animate-fade-in">
+          
+          <!-- Page Header Notion Style -->
           <div>
-            <span class="bg-emerald-800/60 text-emerald-200 text-[10px] sm:text-xs font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider">Portal Pribadi</span>
-            <h2 class="text-lg sm:text-2xl font-bold mt-2" id="portal-user-name">Nama Anggota</h2>
-            <p class="text-xs sm:text-sm text-emerald-100 mt-1">Ringkasan akumulasi saldo dan catatan riwayat setoran pribadi Anda.</p>
+            <div class="text-4xl mb-3">👤</div>
+            <h1 class="text-3xl font-bold tracking-tight text-notion-text" id="portal-user-name">Nama Anggota</h1>
+            <p class="text-notion-muted mt-2 text-sm border-b border-notion-border pb-4">Portal pribadi tabungan Anda. Pantau setoran dan akumulasi saldo.</p>
           </div>
-          <div class="flex flex-wrap gap-2 self-start sm:self-auto shrink-0">
-            <button onclick="openChangeNameModal()" class="px-3 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs sm:text-sm font-semibold shadow-sm transition flex items-center space-x-1.5 border border-emerald-500/30">
-              <i class="fa-solid fa-user-pen text-amber-300"></i>
-              <span>Ganti Nama</span>
+
+          <div class="flex gap-2">
+            <button onclick="openChangeNameModal()" class="px-3 py-1.5 bg-notion-bg border border-notion-border hover:bg-notion-hover text-notion-text rounded text-xs font-medium transition flex items-center">
+              <i class="fa-solid fa-pen mr-1.5 text-notion-muted"></i> Edit Nama
             </button>
-            <button onclick="openChangePinModal()" class="px-3 py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-lg text-xs sm:text-sm font-semibold shadow-sm transition flex items-center space-x-1.5 border border-emerald-500/30">
-              <i class="fa-solid fa-key text-amber-300"></i>
-              <span>Ganti PIN</span>
+            <button onclick="openChangePinModal()" class="px-3 py-1.5 bg-notion-bg border border-notion-border hover:bg-notion-hover text-notion-text rounded text-xs font-medium transition flex items-center">
+              <i class="fa-solid fa-lock mr-1.5 text-notion-muted"></i> Ganti PIN
             </button>
           </div>
-        </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl flex items-center justify-between">
-            <div>
-              <span class="text-xs text-emerald-600 font-semibold uppercase block">Total Saldo Tabungan</span>
-              <span class="text-xl sm:text-2xl font-extrabold text-emerald-800" id="portal-total-saldo">Rp 0</span>
+          <!-- Metrik Callout Blocks -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="border border-notion-border p-4 rounded-md flex items-start gap-3 bg-notion-sidebar/30">
+              <div class="text-xl mt-0.5">💰</div>
+              <div>
+                <p class="text-xs font-medium text-notion-muted uppercase tracking-wide">Total Saldo</p>
+                <p class="text-2xl font-semibold text-notion-text mt-1" id="portal-total-saldo">Rp 0</p>
+              </div>
             </div>
-            <i class="fa-solid fa-piggy-bank text-3xl text-emerald-400"></i>
-          </div>
-
-          <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl flex items-center justify-between">
-            <div>
-              <span class="text-xs text-slate-500 font-semibold uppercase block">Frekuensi Setoran</span>
-              <span class="text-xl sm:text-2xl font-extrabold text-slate-800" id="portal-total-setoran">0 Minggu</span>
-            </div>
-            <i class="fa-solid fa-calendar-check text-3xl text-slate-400"></i>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div class="p-4 sm:p-6 border-b border-slate-100">
-            <h3 class="text-sm sm:text-base font-bold text-slate-900">Catatan Setoran Tabungan Saya</h3>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-slate-50 text-slate-600 uppercase text-[10px] sm:text-xs font-semibold tracking-wider border-b border-slate-200">
-                  <th class="py-3 px-3 sm:py-4 sm:px-6">Tanggal</th>
-                  <th class="py-3 px-3 sm:py-4 sm:px-6">Status / Nama</th>
-                  <th class="py-3 px-3 sm:py-4 sm:px-6">Metode</th>
-                  <th class="py-3 px-3 sm:py-4 sm:px-6 text-right">Nominal Setoran</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 text-xs sm:text-sm text-slate-700" id="portal-history-tbody">
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 1: DASHBOARD OVERVIEW (ADMIN) -->
-      <section id="tab-dashboard" class="space-y-4 sm:space-y-6 hidden">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
-          <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
-            <div>
-              <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500">Total Anggota</p>
-              <h3 class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-0.5 sm:mt-1" id="kpi-total-anggota">13 Orang</h3>
-            </div>
-            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 text-lg sm:text-xl shrink-0">
-              <i class="fa-solid fa-user-group"></i>
-            </div>
-          </div>
-
-          <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
-            <div>
-              <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500">Total Saldo Terkumpul</p>
-              <h3 class="text-xl sm:text-2xl font-extrabold text-emerald-600 mt-0.5 sm:mt-1" id="kpi-total-saldo">Rp 15.790.000</h3>
-            </div>
-            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 text-lg sm:text-xl shrink-0">
-              <i class="fa-solid fa-sack-dollar"></i>
-            </div>
-          </div>
-
-          <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
-            <div>
-              <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500">Total Transaksi Setoran</p>
-              <h3 class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-0.5 sm:mt-1" id="kpi-total-setoran">271 Kali</h3>
-            </div>
-            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 text-lg sm:text-xl shrink-0">
-              <i class="fa-solid fa-receipt"></i>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div class="p-4 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
-            <div>
-              <h2 class="text-base sm:text-lg font-bold text-slate-900">Ringkasan Tabungan Anggota</h2>
-              <p class="text-xs sm:text-sm text-slate-500">Daftar akumulasi tabungan dan frekuensi setoran seluruh anggota.</p>
-            </div>
-            <div class="relative w-full sm:w-auto">
-              <i class="fa-solid fa-search absolute left-3 top-2.5 text-slate-400 text-xs sm:text-sm"></i>
-              <input type="text" id="search-input" onkeyup="filterDashboardTable()" placeholder="Cari nama anggota..." class="pl-9 pr-3 py-1.5 sm:py-2 border border-slate-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none w-full sm:w-64">
-            </div>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse" id="dashboard-table">
-              <thead>
-                <tr class="bg-slate-50 text-slate-600 uppercase text-[10px] sm:text-xs font-semibold tracking-wider border-b border-slate-200">
-                  <th class="py-3 px-3 sm:py-4 sm:px-6">Nama Anggota</th>
-                  <th class="py-3 px-3 sm:py-4 sm:px-6 text-right">Patokan</th>
-                  <th class="py-3 px-3 sm:py-4 sm:px-6 text-right">Setoran</th>
-                  <th class="py-3 px-3 sm:py-4 sm:px-6 text-right">Total Saldo</th>
-                  <th class="py-3 px-3 sm:py-4 sm:px-6 text-center">Aksi</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 text-xs sm:text-sm text-slate-700" id="dashboard-tbody">
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 2: KELOLA DETAIL ANGGOTA (ADMIN) -->
-      <section id="tab-member" class="space-y-4 sm:space-y-6 hidden">
-        <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-slate-200">
-          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-            <div class="w-full sm:w-1/3">
-              <label class="block text-[10px] sm:text-xs font-semibold text-slate-500 uppercase mb-1.5">Pilih Anggota</label>
-              <select id="member-select" onchange="loadMemberDetail()" class="w-full border border-slate-300 rounded-lg p-2 sm:p-2.5 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none font-semibold">
-              </select>
-            </div>
-            <div class="flex gap-4 w-full sm:w-auto justify-between sm:justify-end">
-              <div class="bg-emerald-50 border border-emerald-100 rounded-lg px-3.5 py-2 sm:px-4 text-right w-full sm:w-auto">
-                <span class="text-[10px] sm:text-xs text-emerald-600 block font-medium">Total Terkumpul</span>
-                <span class="font-bold text-emerald-800 text-base sm:text-lg" id="member-total-val">Rp 0</span>
+            <div class="border border-notion-border p-4 rounded-md flex items-start gap-3 bg-notion-sidebar/30">
+              <div class="text-xl mt-0.5">🗓️</div>
+              <div>
+                <p class="text-xs font-medium text-notion-muted uppercase tracking-wide">Frekuensi Setoran</p>
+                <p class="text-2xl font-semibold text-notion-text mt-1" id="portal-total-setoran">0 Minggu</p>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div class="p-4 sm:p-6 border-b border-slate-100">
-            <h3 class="text-sm sm:text-base font-bold text-slate-900">Riwayat Setoran Weekly (Mode Admin)</h3>
+          <!-- Table Block -->
+          <div>
+            <h3 class="font-semibold text-notion-text mb-3">Riwayat Setoran</h3>
+            <div class="border border-notion-border rounded-md overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                  <thead>
+                    <tr class="bg-notion-sidebar border-b border-notion-border text-notion-muted text-xs">
+                      <th class="py-2.5 px-4 font-medium">Tanggal</th>
+                      <th class="py-2.5 px-4 font-medium">Status / Nama</th>
+                      <th class="py-2.5 px-4 font-medium">Metode</th>
+                      <th class="py-2.5 px-4 font-medium text-right">Nominal</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-notion-border text-notion-text" id="portal-history-tbody">
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-slate-50 text-slate-600 uppercase text-[10px] sm:text-xs font-semibold tracking-wider border-b border-slate-200">
-                  <th class="py-3 px-3 sm:py-4 sm:px-6">Tanggal</th>
-                  <th class="py-3 px-3 sm:py-4 sm:px-6">Nama Anggota</th>
-                  <th class="py-3 px-3 sm:py-4 sm:px-6">Metode</th>
-                  <th class="py-3 px-3 sm:py-4 sm:px-6 text-right">Nominal</th>
-                  <th class="py-3 px-3 sm:py-4 sm:px-6 text-center">Aksi</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 text-xs sm:text-sm text-slate-700" id="member-history-tbody">
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- TAB 3: INPUT SETORAN (ADMIN) -->
-      <section id="tab-input" class="max-w-xl mx-auto hidden">
-        <div class="bg-white p-5 sm:p-8 rounded-xl shadow-sm border border-slate-200">
-          <div class="border-b border-slate-100 pb-3 mb-4 sm:pb-4 sm:mb-6">
-            <h2 class="text-lg sm:text-xl font-bold text-slate-900">Input Setoran Baru</h2>
-            <p class="text-xs sm:text-sm text-slate-500">Catat transaksi setoran baru ke dalam spreadsheet.</p>
+        <!-- TAB 1: DASHBOARD OVERVIEW (ADMIN) -->
+        <section id="tab-dashboard" class="space-y-8 hidden animate-fade-in">
+          
+          <div>
+            <div class="text-4xl mb-3">📈</div>
+            <h1 class="text-3xl font-bold tracking-tight text-notion-text">Dashboard</h1>
+            <p class="text-notion-muted mt-2 text-sm border-b border-notion-border pb-4">Ringkasan statistik dan rekapitulasi seluruh anggota Tabungan Berkah.</p>
           </div>
 
-          <form id="form-setoran" onsubmit="handleFormSubmit(event)" class="space-y-3.5 sm:space-y-4">
+          <!-- Metrics -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="border border-notion-border p-4 rounded-md">
+              <p class="text-xs font-medium text-notion-muted">Total Anggota</p>
+              <h3 class="text-2xl font-semibold mt-1" id="kpi-total-anggota">0 Orang</h3>
+            </div>
+            <div class="border border-notion-border p-4 rounded-md">
+              <p class="text-xs font-medium text-notion-muted">Total Saldo Terkumpul</p>
+              <h3 class="text-2xl font-semibold mt-1 text-notion-blue" id="kpi-total-saldo">Rp 0</h3>
+            </div>
+            <div class="border border-notion-border p-4 rounded-md">
+              <p class="text-xs font-medium text-notion-muted">Total Transaksi</p>
+              <h3 class="text-2xl font-semibold mt-1" id="kpi-total-setoran">0 Kali</h3>
+            </div>
+          </div>
+
+          <!-- Table Area -->
+          <div>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+              <h3 class="font-semibold text-notion-text">Rekapitulasi Anggota</h3>
+              <div class="relative max-w-xs w-full">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2 text-notion-muted text-xs"></i>
+                <input type="text" id="search-input" onkeyup="filterDashboardTable()" placeholder="Filter nama..." class="w-full pl-8 pr-3 py-1 border border-notion-border rounded-md text-sm focus:border-notion-border focus:ring-0 outline-none bg-notion-sidebar/50 transition">
+              </div>
+            </div>
+
+            <div class="border border-notion-border rounded-md overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm" id="dashboard-table">
+                  <thead>
+                    <tr class="bg-notion-sidebar border-b border-notion-border text-notion-muted text-xs">
+                      <th class="py-2.5 px-4 font-medium">Nama Anggota</th>
+                      <th class="py-2.5 px-4 font-medium text-right">Patokan</th>
+                      <th class="py-2.5 px-4 font-medium text-right">Setoran</th>
+                      <th class="py-2.5 px-4 font-medium text-right">Total Saldo</th>
+                      <th class="py-2.5 px-4 font-medium text-center">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-notion-border text-notion-text" id="dashboard-tbody">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 2: KELOLA DETAIL ANGGOTA (ADMIN) -->
+        <section id="tab-member" class="space-y-8 hidden animate-fade-in">
+          <div>
+            <div class="text-4xl mb-3">⚙️</div>
+            <h1 class="text-3xl font-bold tracking-tight text-notion-text">Kelola Detail</h1>
+            <p class="text-notion-muted mt-2 text-sm border-b border-notion-border pb-4">Lihat riwayat spesifik anggota, edit, atau hapus transaksi setoran.</p>
+          </div>
+
+          <!-- Selector Block -->
+          <div class="bg-notion-sidebar p-4 rounded-md border border-notion-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="w-full sm:w-1/2">
+              <label class="block text-xs font-medium text-notion-muted mb-1.5">Pilih Anggota</label>
+              <div class="relative">
+                <select id="member-select" onchange="loadMemberDetail()" class="w-full appearance-none border border-notion-border rounded p-2 pr-8 text-sm focus:border-notion-blue outline-none bg-white font-medium">
+                </select>
+                <i class="fa-solid fa-chevron-down absolute right-3 top-2.5 text-xs text-notion-muted pointer-events-none"></i>
+              </div>
+            </div>
+            <div class="text-left sm:text-right w-full sm:w-auto">
+              <p class="text-xs font-medium text-notion-muted">Total Terkumpul</p>
+              <p class="text-2xl font-semibold text-notion-blue" id="member-total-val">Rp 0</p>
+            </div>
+          </div>
+
+          <!-- History Table -->
+          <div>
+            <h3 class="font-semibold text-notion-text mb-3">Riwayat Setoran Individu</h3>
+            <div class="border border-notion-border rounded-md overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                  <thead>
+                    <tr class="bg-notion-sidebar border-b border-notion-border text-notion-muted text-xs">
+                      <th class="py-2.5 px-4 font-medium">Tanggal</th>
+                      <th class="py-2.5 px-4 font-medium">Nama</th>
+                      <th class="py-2.5 px-4 font-medium">Metode</th>
+                      <th class="py-2.5 px-4 font-medium text-right">Nominal</th>
+                      <th class="py-2.5 px-4 font-medium text-center">Tindakan</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-notion-border text-notion-text" id="member-history-tbody">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 3: INPUT SETORAN (ADMIN) -->
+        <section id="tab-input" class="space-y-8 hidden animate-fade-in max-w-2xl">
+          <div>
+            <div class="text-4xl mb-3">📝</div>
+            <h1 class="text-3xl font-bold tracking-tight text-notion-text">Input Setoran</h1>
+            <p class="text-notion-muted mt-2 text-sm border-b border-notion-border pb-4">Tambahkan entri data setoran tabungan baru ke database.</p>
+          </div>
+
+          <form id="form-setoran" onsubmit="handleFormSubmit(event)" class="space-y-5 border border-notion-border p-6 rounded-md bg-notion-bg shadow-sm">
+            
             <div>
-              <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Tanggal</label>
-              <input type="date" id="input-date" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+              <label class="block text-sm font-medium text-notion-text mb-1.5">Tanggal Setoran</label>
+              <input type="date" id="input-date" required class="w-full border border-notion-border rounded p-2 text-sm focus:border-notion-blue outline-none transition bg-notion-sidebar/30">
             </div>
 
             <div>
-              <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Nama Anggota</label>
-              <select id="input-member" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-              </select>
+              <label class="block text-sm font-medium text-notion-text mb-1.5">Nama Anggota</label>
+              <div class="relative">
+                <select id="input-member" required class="w-full appearance-none border border-notion-border rounded p-2 text-sm focus:border-notion-blue outline-none bg-notion-sidebar/30">
+                </select>
+                <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-xs text-notion-muted pointer-events-none"></i>
+              </div>
             </div>
 
             <div>
-              <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Metode Pembayaran</label>
-              <select id="input-payment-type" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                <option value="Cash">Cash</option>
-                <option value="Bank transfer">Bank Transfer</option>
-              </select>
+              <label class="block text-sm font-medium text-notion-text mb-1.5">Metode Pembayaran</label>
+              <div class="relative">
+                <select id="input-payment-type" required class="w-full appearance-none border border-notion-border rounded p-2 text-sm focus:border-notion-blue outline-none bg-notion-sidebar/30">
+                  <option value="Cash">Tunai (Cash)</option>
+                  <option value="Bank transfer">Transfer Bank</option>
+                </select>
+                <i class="fa-solid fa-chevron-down absolute right-3 top-3 text-xs text-notion-muted pointer-events-none"></i>
+              </div>
             </div>
 
             <div>
-              <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Nominal Setoran (Rp)</label>
-              <input type="number" id="input-amount" min="1000" step="1000" placeholder="contoh: 50000" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+              <label class="block text-sm font-medium text-notion-text mb-1.5">Nominal Setoran (Rp)</label>
+              <input type="number" id="input-amount" min="1000" step="1000" placeholder="Misal: 50000" required class="w-full border border-notion-border rounded p-2 text-sm focus:border-notion-blue outline-none transition bg-notion-sidebar/30">
             </div>
 
-            <button type="submit" id="btn-submit" class="w-full bg-emerald-700 text-white font-semibold py-2.5 rounded-lg text-xs sm:text-sm hover:bg-emerald-800 transition flex items-center justify-center space-x-2 mt-2">
-              <i class="fa-solid fa-paper-plane"></i>
-              <span>Simpan Setoran</span>
-            </button>
+            <div class="pt-2">
+              <button type="submit" id="btn-submit" class="w-full bg-[#2383e2] hover:bg-[#1d6bba] text-white font-medium py-2 rounded text-sm transition flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-paper-plane text-xs"></i>
+                <span>Simpan Data</span>
+              </button>
+            </div>
           </form>
-        </div>
-      </section>
+        </section>
 
+      </div>
     </main>
-
   </div>
 
   <!-- MODAL EDIT SETORAN (ADMIN) -->
-  <div id="modal-edit" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-xl shadow-xl border border-slate-200 max-w-md w-full p-5 sm:p-6 space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h3 class="text-base sm:text-lg font-bold text-slate-900">
-          <i class="fa-solid fa-pen-to-square text-amber-500 mr-2"></i>Edit Data Setoran
+  <div id="modal-edit" class="fixed inset-0 bg-notion-text/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-notion-bg rounded-md shadow-xl border border-notion-border max-w-md w-full p-6 space-y-5">
+      <div class="flex items-center justify-between border-b border-notion-border pb-3">
+        <h3 class="text-lg font-semibold text-notion-text flex items-center">
+          <i class="fa-solid fa-pen text-notion-muted mr-2 text-sm"></i> Edit Data
         </h3>
-        <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 p-1">
-          <i class="fa-solid fa-xmark text-lg"></i>
+        <button onclick="closeEditModal()" class="text-notion-muted hover:text-notion-text p-1 transition">
+          <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <form id="form-edit-setoran" onsubmit="handleEditSubmit(event)" class="space-y-3">
+      <form id="form-edit-setoran" onsubmit="handleEditSubmit(event)" class="space-y-4">
         <input type="hidden" id="edit-row-index">
         <input type="hidden" id="edit-original-date">
 
         <div>
-          <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Tanggal</label>
-          <input type="date" id="edit-date" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          <label class="block text-xs font-medium text-notion-muted mb-1">Tanggal</label>
+          <input type="date" id="edit-date" required class="w-full border border-notion-border rounded p-2 text-sm focus:border-notion-blue outline-none">
         </div>
 
         <div>
-          <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Nama Anggota</label>
-          <input type="text" id="edit-member" readonly class="w-full border border-slate-200 bg-slate-100 text-slate-600 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold cursor-not-allowed">
+          <label class="block text-xs font-medium text-notion-muted mb-1">Nama Anggota</label>
+          <input type="text" id="edit-member" readonly class="w-full border border-notion-border bg-notion-sidebar text-notion-muted rounded p-2 text-sm font-medium cursor-not-allowed">
         </div>
 
         <div>
-          <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Metode Pembayaran</label>
-          <select id="edit-payment-type" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          <label class="block text-xs font-medium text-notion-muted mb-1">Metode Pembayaran</label>
+          <select id="edit-payment-type" required class="w-full border border-notion-border rounded p-2 text-sm focus:border-notion-blue outline-none">
             <option value="Cash">Cash</option>
             <option value="Bank transfer">Bank Transfer</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Nominal Setoran (Rp)</label>
-          <input type="number" id="edit-amount" min="0" step="1000" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          <label class="block text-xs font-medium text-notion-muted mb-1">Nominal (Rp)</label>
+          <input type="number" id="edit-amount" min="0" step="1000" required class="w-full border border-notion-border rounded p-2 text-sm focus:border-notion-blue outline-none">
         </div>
 
         <div class="flex space-x-2 pt-2">
-          <button type="button" onclick="closeEditModal()" class="w-1/2 bg-slate-100 text-slate-700 font-semibold py-2 rounded-lg text-xs sm:text-sm hover:bg-slate-200 transition">
+          <button type="button" onclick="closeEditModal()" class="w-1/2 bg-notion-sidebar border border-notion-border text-notion-text font-medium py-2 rounded text-sm hover:bg-notion-hover transition">
             Batal
           </button>
-          <button type="submit" id="btn-save-edit" class="w-1/2 bg-amber-600 text-white font-semibold py-2 rounded-lg text-xs sm:text-sm hover:bg-amber-700 transition flex items-center justify-center space-x-1.5">
-            <i class="fa-solid fa-floppy-disk"></i>
+          <button type="submit" id="btn-save-edit" class="w-1/2 bg-[#2383e2] text-white font-medium py-2 rounded text-sm hover:bg-[#1d6bba] transition flex items-center justify-center space-x-1.5">
             <span>Simpan</span>
           </button>
         </div>
@@ -387,40 +447,39 @@
   </div>
 
   <!-- MODAL GANTI NAMA MANDIRI (ANGGOTA) -->
-  <div id="modal-change-name" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-xl shadow-xl border border-slate-200 max-w-md w-full p-5 sm:p-6 space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h3 class="text-base sm:text-lg font-bold text-slate-900">
-          <i class="fa-solid fa-user-pen text-amber-500 mr-2"></i>Ganti Nama Anggota
+  <div id="modal-change-name" class="fixed inset-0 bg-notion-text/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-notion-bg rounded-md shadow-xl border border-notion-border max-w-md w-full p-6 space-y-5">
+      <div class="flex items-center justify-between border-b border-notion-border pb-3">
+        <h3 class="text-lg font-semibold text-notion-text flex items-center">
+          <i class="fa-solid fa-font text-notion-muted mr-2 text-sm"></i> Ganti Nama
         </h3>
-        <button onclick="closeChangeNameModal()" class="text-slate-400 hover:text-slate-600 p-1">
-          <i class="fa-solid fa-xmark text-lg"></i>
+        <button onclick="closeChangeNameModal()" class="text-notion-muted hover:text-notion-text p-1 transition">
+          <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <form id="form-change-name" onsubmit="handleChangeNameSubmit(event)" class="space-y-3">
+      <form id="form-change-name" onsubmit="handleChangeNameSubmit(event)" class="space-y-4">
         <div>
-          <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Nama Saat Ini</label>
-          <input type="text" id="name-current" readonly class="w-full border border-slate-200 bg-slate-100 text-slate-600 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold cursor-not-allowed">
+          <label class="block text-xs font-medium text-notion-muted mb-1">Nama Saat Ini</label>
+          <input type="text" id="name-current" readonly class="w-full border border-notion-border bg-notion-sidebar text-notion-muted rounded p-2 text-sm cursor-not-allowed">
         </div>
 
         <div>
-          <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Nama Baru</label>
-          <input type="text" id="name-new" placeholder="Masukkan Nama Baru" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          <label class="block text-xs font-medium text-notion-muted mb-1">Nama Baru</label>
+          <input type="text" id="name-new" placeholder="Ketik nama baru" required class="w-full border border-notion-border rounded p-2 text-sm focus:border-notion-blue outline-none">
         </div>
 
         <div>
-          <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">PIN Konfirmasi</label>
-          <input type="password" id="name-pin" placeholder="Masukkan PIN Anda" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          <label class="block text-xs font-medium text-notion-muted mb-1">PIN Konfirmasi</label>
+          <input type="password" id="name-pin" placeholder="Masukkan PIN" required class="w-full border border-notion-border rounded p-2 text-sm focus:border-notion-blue outline-none">
         </div>
 
         <div class="flex space-x-2 pt-2">
-          <button type="button" onclick="closeChangeNameModal()" class="w-1/2 bg-slate-100 text-slate-700 font-semibold py-2 rounded-lg text-xs sm:text-sm hover:bg-slate-200 transition">
+          <button type="button" onclick="closeChangeNameModal()" class="w-1/2 bg-notion-sidebar border border-notion-border text-notion-text font-medium py-2 rounded text-sm hover:bg-notion-hover transition">
             Batal
           </button>
-          <button type="submit" id="btn-save-name" class="w-1/2 bg-emerald-700 text-white font-semibold py-2 rounded-lg text-xs sm:text-sm hover:bg-emerald-800 transition flex items-center justify-center space-x-1.5">
-            <i class="fa-solid fa-check"></i>
-            <span>Simpan Nama</span>
+          <button type="submit" id="btn-save-name" class="w-1/2 bg-[#2383e2] text-white font-medium py-2 rounded text-sm hover:bg-[#1d6bba] transition">
+            Simpan Nama
           </button>
         </div>
       </form>
@@ -428,55 +487,54 @@
   </div>
 
   <!-- MODAL GANTI PIN MANDIRI (ANGGOTA) -->
-  <div id="modal-change-pin" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-xl shadow-xl border border-slate-200 max-w-md w-full p-5 sm:p-6 space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h3 class="text-base sm:text-lg font-bold text-slate-900">
-          <i class="fa-solid fa-key text-amber-500 mr-2"></i>Ganti PIN Anggota
+  <div id="modal-change-pin" class="fixed inset-0 bg-notion-text/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-notion-bg rounded-md shadow-xl border border-notion-border max-w-md w-full p-6 space-y-5">
+      <div class="flex items-center justify-between border-b border-notion-border pb-3">
+        <h3 class="text-lg font-semibold text-notion-text flex items-center">
+          <i class="fa-solid fa-lock text-notion-muted mr-2 text-sm"></i> Ganti PIN
         </h3>
-        <button onclick="closeChangePinModal()" class="text-slate-400 hover:text-slate-600 p-1">
-          <i class="fa-solid fa-xmark text-lg"></i>
+        <button onclick="closeChangePinModal()" class="text-notion-muted hover:text-notion-text p-1 transition">
+          <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <form id="form-change-pin" onsubmit="handleChangePinSubmit(event)" class="space-y-3">
+      <form id="form-change-pin" onsubmit="handleChangePinSubmit(event)" class="space-y-4">
         <div>
-          <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">PIN Lama Saat Ini</label>
-          <input type="password" id="pin-current" placeholder="Masukkan PIN Lama" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          <label class="block text-xs font-medium text-notion-muted mb-1">PIN Lama Saat Ini</label>
+          <input type="password" id="pin-current" placeholder="Ketik PIN Lama" required class="w-full border border-notion-border rounded p-2 text-sm focus:border-notion-blue outline-none">
         </div>
 
         <div>
-          <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">PIN Baru</label>
-          <input type="password" id="pin-new" placeholder="Masukkan PIN Baru (Min. 4 digit)" minlength="4" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          <label class="block text-xs font-medium text-notion-muted mb-1">PIN Baru</label>
+          <input type="password" id="pin-new" placeholder="Min. 4 digit" minlength="4" required class="w-full border border-notion-border rounded p-2 text-sm focus:border-notion-blue outline-none">
         </div>
 
         <div>
-          <label class="block text-xs sm:text-sm font-medium text-slate-700 mb-1">Konfirmasi PIN Baru</label>
-          <input type="password" id="pin-confirm" placeholder="Ketik Ulang PIN Baru" minlength="4" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          <label class="block text-xs font-medium text-notion-muted mb-1">Konfirmasi PIN Baru</label>
+          <input type="password" id="pin-confirm" placeholder="Ketik Ulang PIN Baru" minlength="4" required class="w-full border border-notion-border rounded p-2 text-sm focus:border-notion-blue outline-none">
         </div>
 
         <div class="flex space-x-2 pt-2">
-          <button type="button" onclick="closeChangePinModal()" class="w-1/2 bg-slate-100 text-slate-700 font-semibold py-2 rounded-lg text-xs sm:text-sm hover:bg-slate-200 transition">
+          <button type="button" onclick="closeChangePinModal()" class="w-1/2 bg-notion-sidebar border border-notion-border text-notion-text font-medium py-2 rounded text-sm hover:bg-notion-hover transition">
             Batal
           </button>
-          <button type="submit" id="btn-save-pin" class="w-1/2 bg-emerald-700 text-white font-semibold py-2 rounded-lg text-xs sm:text-sm hover:bg-emerald-800 transition flex items-center justify-center space-x-1.5">
-            <i class="fa-solid fa-check"></i>
-            <span>Simpan PIN</span>
+          <button type="submit" id="btn-save-pin" class="w-1/2 bg-[#2383e2] text-white font-medium py-2 rounded text-sm hover:bg-[#1d6bba] transition">
+            Simpan PIN
           </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Notification Toast -->
-  <div id="toast" class="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 hidden px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-lg shadow-lg text-white font-medium text-xs sm:text-sm flex items-center space-x-2 transition-all z-50">
-    <i id="toast-icon" class="fa-solid"></i>
+  <!-- Notification Toast (Notion Style Callout) -->
+  <div id="toast" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 hidden px-4 py-3 rounded border shadow-lg font-medium text-sm flex items-center space-x-3 transition-all z-50 min-w-[250px]">
+    <span id="toast-icon" class="text-lg"></span>
     <span id="toast-msg"></span>
   </div>
 
   <script>
     // --- MULAI KODE PENGHUBUNG GITHUB KE GOOGLE APPS SCRIPT ---
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHVhDaRMLgq_sbfoJjyBgZAyAU-KKdAIdjFyxlmD73i57pqD7lx0PZqTUdnEUqEOjeYA/exec"; // Backend URL yang diminta
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwO6JWw3v1N-WCN285iVF2d8wf0M93QtEGxzZnrEwP6AJSbfbYU2k3HwTO7YctjALdBdg/exec"; 
 
     if (typeof window.google === 'undefined') {
       window.google = {
@@ -503,8 +561,8 @@
                 return function(...args) {
                   const onSuccess = successHandler;
                   const onFailure = failureHandler;
-                  successHandler = null; // Reset
-                  failureHandler = null; // Reset
+                  successHandler = null; 
+                  failureHandler = null; 
 
                   fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -537,29 +595,17 @@
 
     let currentRole = null;
     let loggedMemberName = null;
-    let dashboardData = [
-      { name: "MBAK AVI", perTabungan: 50000, total: 1200000, count: 24 },
-      { name: "MBAK NAFIS", perTabungan: 20000, total: 100000, count: 5 },
-      { name: "MBAK KASIH", perTabungan: 100000, total: 1400000, count: 14 },
-      { name: "MBAK RENITA", perTabungan: 100000, total: 2500000, count: 25 },
-      { name: "BU YELI", perTabungan: 50000, total: 1300000, count: 26 },
-      { name: "BU TITIK", perTabungan: 30000, total: 780000, count: 26 },
-      { name: "MBAK FARIDA", perTabungan: 100000, total: 2800000, count: 28 },
-      { name: "MBAK AZIZAH", perTabungan: 50000, total: 700000, count: 14 },
-      { name: "MBAK KHARIN", perTabungan: 100000, total: 1800000, count: 18 },
-      { name: "MBAK PUTRI", perTabungan: 50000, total: 1250000, count: 25 },
-      { name: "MBAK LIA", perTabungan: 20000, total: 200000, count: 10 },
-      { name: "MBAK HILDA", perTabungan: 50000, total: 1500000, count: 30 },
-      { name: "BU ANGGRI", perTabungan: 10000, total: 260000, count: 26 }
-    ];
+    let dashboardData = [];
 
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('input-date').value = new Date().toISOString().substring(0, 10);
 
+      // Loading State for Dropdown
+      const select = document.getElementById('login-member-select');
+      select.innerHTML = '<option>Memuat data...</option>';
+
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run.withSuccessHandler(onDataLoaded).getDashboardData();
-      } else {
-        populateLoginMemberDropdown();
       }
     });
 
@@ -581,20 +627,28 @@
       });
     }
 
+    /* THEME STYLING LOGIC (Notion adapt) */
     function setLoginRole(role) {
       const btnAnggota = document.getElementById('btn-role-anggota');
       const btnAdmin = document.getElementById('btn-role-admin');
       const formAnggota = document.getElementById('form-login-anggota');
       const formAdmin = document.getElementById('form-login-admin');
 
+      const activeClasses = ['bg-white', 'text-notion-text', 'shadow-sm'];
+      const inactiveClasses = ['text-notion-muted', 'hover:text-notion-text'];
+
       if (role === 'anggota') {
-        btnAnggota.className = "flex-1 py-2 rounded-lg bg-emerald-700 text-white shadow-sm transition";
-        btnAdmin.className = "flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition";
+        btnAnggota.classList.add(...activeClasses);
+        btnAnggota.classList.remove(...inactiveClasses);
+        btnAdmin.classList.add(...inactiveClasses);
+        btnAdmin.classList.remove(...activeClasses);
         formAnggota.classList.remove('hidden');
         formAdmin.classList.add('hidden');
       } else {
-        btnAdmin.className = "flex-1 py-2 rounded-lg bg-slate-900 text-white shadow-sm transition";
-        btnAnggota.className = "flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 transition";
+        btnAdmin.classList.add(...activeClasses);
+        btnAdmin.classList.remove(...inactiveClasses);
+        btnAnggota.classList.add(...inactiveClasses);
+        btnAnggota.classList.remove(...activeClasses);
         formAdmin.classList.remove('hidden');
         formAnggota.classList.add('hidden');
       }
@@ -607,19 +661,17 @@
       const pin = document.getElementById('login-member-pin').value;
 
       if (typeof google !== 'undefined' && google.script && google.script.run) {
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+        
         google.script.run.withSuccessHandler(res => {
+          btn.innerHTML = `Masuk Portal`;
           if (res.valid) {
             initSession('anggota', memberName);
           } else {
             showToast("PIN Anggota salah!", "error");
           }
         }).verifyPin(memberName, pin, 'anggota');
-      } else {
-        if (pin === "1234" || pin === "") {
-          initSession('anggota', memberName);
-        } else {
-          showToast("PIN Anggota salah!", "error");
-        }
       }
     }
 
@@ -628,19 +680,17 @@
       const pin = document.getElementById('login-admin-pin').value;
 
       if (typeof google !== 'undefined' && google.script && google.script.run) {
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+        
         google.script.run.withSuccessHandler(res => {
+          btn.innerHTML = `Masuk Dashboard`;
           if (res.valid) {
             initSession('admin', null);
           } else {
             showToast("PIN Admin salah!", "error");
           }
         }).verifyPin('ADMIN', pin, 'admin');
-      } else {
-        if (pin === "8888") {
-          initSession('admin', null);
-        } else {
-          showToast("PIN Admin salah! (Default: 8888)", "error");
-        }
       }
     }
 
@@ -651,19 +701,25 @@
       document.getElementById('screen-login').classList.add('hidden');
       document.getElementById('screen-app').classList.remove('hidden');
 
+      // Hide all nav elements first
       document.querySelectorAll('.nav-item').forEach(el => el.classList.add('hidden'));
 
       if (role === 'anggota') {
-        document.getElementById('user-role-badge').innerText = `Anggota: ${name}`;
+        document.getElementById('user-role-badge').innerText = name;
         document.getElementById('nav-portal').classList.remove('hidden');
+        document.getElementById('nav-portal-mobile').classList.remove('hidden');
         document.getElementById('portal-user-name').innerText = name;
         switchTab('portal');
         loadPortalData();
       } else {
-        document.getElementById('user-role-badge').innerText = "Mode Admin Pengurus";
+        document.getElementById('user-role-badge').innerText = "Administrator";
         document.getElementById('nav-dashboard').classList.remove('hidden');
         document.getElementById('nav-member').classList.remove('hidden');
         document.getElementById('nav-input').classList.remove('hidden');
+        
+        document.getElementById('nav-dashboard-mobile').classList.remove('hidden');
+        document.getElementById('nav-member-mobile').classList.remove('hidden');
+        document.getElementById('nav-input-mobile').classList.remove('hidden');
         
         populateAdminDropdowns();
         renderDashboard();
@@ -678,6 +734,7 @@
       document.getElementById('login-admin-pin').value = '';
       document.getElementById('screen-app').classList.add('hidden');
       document.getElementById('screen-login').classList.remove('hidden');
+      document.getElementById('screen-login').classList.add('flex');
     }
 
     function formatRupiah(number) {
@@ -715,12 +772,12 @@
         google.script.run
           .withSuccessHandler(res => {
             btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Simpan Nama</span>`;
+            btn.innerHTML = `Simpan Nama`;
             closeChangeNameModal();
             
             loggedMemberName = res.newName;
             document.getElementById('portal-user-name').innerText = res.newName;
-            document.getElementById('user-role-badge').innerText = `Anggota: ${res.newName}`;
+            document.getElementById('user-role-badge').innerText = res.newName;
             
             showToast("Nama Anda berhasil diubah!", "success");
             loadPortalData();
@@ -728,20 +785,10 @@
           })
           .withFailureHandler(err => {
             btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Simpan Nama</span>`;
-            showToast("Gagal ubah nama: " + err.message, "error");
+            btn.innerHTML = `Simpan Nama`;
+            showToast(err.message, "error");
           })
           .changeMemberName(payload);
-      } else {
-        setTimeout(() => {
-          btn.disabled = false;
-          btn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Simpan Nama</span>`;
-          closeChangeNameModal();
-          loggedMemberName = newName;
-          document.getElementById('portal-user-name').innerText = newName;
-          document.getElementById('user-role-badge').innerText = `Anggota: ${newName}`;
-          showToast("Demo Mode: Nama berhasil diubah!", "success");
-        }, 800);
       }
     }
 
@@ -761,7 +808,7 @@
       const confirmPin = document.getElementById('pin-confirm').value;
 
       if (newPin !== confirmPin) {
-        showToast("Konfirmasi PIN baru tidak cocok!", "error");
+        showToast("Konfirmasi PIN tidak cocok!", "error");
         return;
       }
 
@@ -779,23 +826,16 @@
         google.script.run
           .withSuccessHandler(res => {
             btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Simpan PIN</span>`;
+            btn.innerHTML = `Simpan PIN`;
             closeChangePinModal();
             showToast("PIN Anda berhasil diubah!", "success");
           })
           .withFailureHandler(err => {
             btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Simpan PIN</span>`;
-            showToast("Gagal ubah PIN: " + err.message, "error");
+            btn.innerHTML = `Simpan PIN`;
+            showToast(err.message, "error");
           })
           .changeMemberPin(payload);
-      } else {
-        setTimeout(() => {
-          btn.disabled = false;
-          btn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Simpan PIN</span>`;
-          closeChangePinModal();
-          showToast("Demo Mode: PIN berhasil diubah!", "success");
-        }, 800);
       }
     }
 
@@ -807,15 +847,8 @@
       document.getElementById('portal-total-setoran').innerText = (memberInfo ? memberInfo.count : 0) + " Minggu";
 
       if (typeof google !== 'undefined' && google.script && google.script.run) {
+        document.getElementById('portal-history-tbody').innerHTML = `<tr><td colspan="4" class="text-center py-6 text-notion-muted text-xs">Memuat data...</td></tr>`;
         google.script.run.withSuccessHandler(renderPortalHistory).getMemberDetails(loggedMemberName);
-      } else {
-        const mockRows = Array.from({ length: 5 }, (_, i) => ({
-          date: `2026-0${i+1}-01`,
-          name: loggedMemberName,
-          type: i % 2 === 0 ? "Cash" : "Bank transfer",
-          amount: memberInfo ? memberInfo.perTabungan : 50000
-        }));
-        renderPortalHistory(mockRows);
       }
     }
 
@@ -824,18 +857,23 @@
       tbody.innerHTML = '';
 
       if (!rows || rows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-400">Belum ada riwayat setoran.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-notion-muted text-xs italic">Belum ada riwayat setoran.</td></tr>`;
         return;
       }
 
       rows.forEach(r => {
         const tr = document.createElement('tr');
-        const badgeColor = r.type === 'Cash' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800';
+        // Notion style badges: muted background
+        const badgeHTML = r.type === 'Cash' 
+          ? `<span class="bg-gray-100 border border-gray-200 text-gray-700 px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide">Cash</span>` 
+          : `<span class="bg-blue-50 border border-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide">Transfer</span>`;
+        
+        tr.className = "hover:bg-notion-hover/50 transition";
         tr.innerHTML = `
-          <td class="py-3 px-3 sm:py-4 sm:px-6 text-slate-600 font-medium">${r.date}</td>
-          <td class="py-3 px-3 sm:py-4 sm:px-6 font-semibold text-slate-900">${r.name}</td>
-          <td class="py-3 px-3 sm:py-4 sm:px-6"><span class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs rounded-full font-semibold ${badgeColor}">${r.type}</span></td>
-          <td class="py-3 px-3 sm:py-4 sm:px-6 text-right font-extrabold text-emerald-700">${formatRupiah(r.amount)}</td>
+          <td class="py-3 px-4 text-notion-muted whitespace-nowrap">${r.date}</td>
+          <td class="py-3 px-4 font-medium">${r.name}</td>
+          <td class="py-3 px-4">${badgeHTML}</td>
+          <td class="py-3 px-4 text-right font-medium text-notion-text">${formatRupiah(r.amount)}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -854,15 +892,15 @@
         totalSetoranCount += item.count;
 
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition";
+        tr.className = "hover:bg-notion-hover/50 transition";
         tr.innerHTML = `
-          <td class="py-3 px-3 sm:py-4 sm:px-6 font-semibold text-slate-800">${item.name}</td>
-          <td class="py-3 px-3 sm:py-4 sm:px-6 text-right">${formatRupiah(item.perTabungan)}</td>
-          <td class="py-3 px-3 sm:py-4 sm:px-6 text-right font-medium">${item.count} Mgg</td>
-          <td class="py-3 px-3 sm:py-4 sm:px-6 text-right font-bold text-emerald-700">${formatRupiah(item.total)}</td>
-          <td class="py-3 px-3 sm:py-4 sm:px-6 text-center">
-            <button onclick="inspectMember('${item.name}')" class="text-[10px] sm:text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full font-semibold hover:bg-emerald-100 transition whitespace-nowrap">
-              Detail <i class="fa-solid fa-arrow-right ml-0.5"></i>
+          <td class="py-3 px-4 font-medium">${item.name}</td>
+          <td class="py-3 px-4 text-right text-notion-muted">${formatRupiah(item.perTabungan)}</td>
+          <td class="py-3 px-4 text-right text-notion-muted">${item.count} Mgg</td>
+          <td class="py-3 px-4 text-right font-medium">${formatRupiah(item.total)}</td>
+          <td class="py-3 px-4 text-center">
+            <button onclick="inspectMember('${item.name}')" class="text-xs bg-notion-sidebar border border-notion-border text-notion-text px-2 py-1 rounded font-medium hover:bg-notion-hover transition">
+              Detail
             </button>
           </td>
         `;
@@ -897,19 +935,42 @@
     }
 
     function switchTab(tabName) {
+      // 1. Hide all content sections
       ['portal', 'dashboard', 'member', 'input'].forEach(t => {
-        document.getElementById(`tab-${t}`).classList.add('hidden');
-        const navBtn = document.getElementById(`nav-${t}`);
-        if (navBtn) {
-          navBtn.classList.remove('bg-emerald-800', 'text-white');
-          navBtn.classList.add('text-emerald-100');
-        }
+        const el = document.getElementById(`tab-${t}`);
+        if(el) el.classList.add('hidden');
       });
 
-      document.getElementById(`tab-${tabName}`).classList.remove('hidden');
-      const activeNav = document.getElementById(`nav-${tabName}`);
-      if (activeNav) {
-        activeNav.classList.add('bg-emerald-800', 'text-white');
+      // 2. Reset Desktop Nav classes
+      document.querySelectorAll('aside .nav-item').forEach(el => {
+        el.classList.remove('bg-notion-hover', 'text-notion-text');
+        el.classList.add('text-notion-muted');
+      });
+
+      // 3. Reset Mobile Nav classes
+      document.querySelectorAll('.md\\:hidden .nav-item').forEach(el => {
+        el.classList.remove('bg-white', 'border-notion-border', 'text-notion-text', 'shadow-sm');
+        el.classList.add('text-notion-muted');
+        el.style.border = 'none'; // reset
+      });
+
+      // Show active content
+      const contentEl = document.getElementById(`tab-${tabName}`);
+      if(contentEl) contentEl.classList.remove('hidden');
+
+      // Set Desktop Nav Active
+      const activeDesktop = document.getElementById(`nav-${tabName}`);
+      if (activeDesktop) {
+        activeDesktop.classList.remove('text-notion-muted');
+        activeDesktop.classList.add('bg-notion-hover', 'text-notion-text');
+      }
+
+      // Set Mobile Nav Active
+      const activeMobile = document.getElementById(`nav-${tabName}-mobile`);
+      if (activeMobile) {
+        activeMobile.classList.remove('text-notion-muted');
+        activeMobile.classList.add('bg-white', 'text-notion-text', 'shadow-sm');
+        activeMobile.style.border = '1px solid #e9e9e7';
       }
     }
 
@@ -926,16 +987,8 @@
       document.getElementById('member-total-val').innerText = formatRupiah(totalVal);
 
       if (typeof google !== 'undefined' && google.script && google.script.run) {
+        document.getElementById('member-history-tbody').innerHTML = `<tr><td colspan="5" class="text-center py-6 text-notion-muted text-xs">Memuat riwayat...</td></tr>`;
         google.script.run.withSuccessHandler(renderMemberHistory).getMemberDetails(selectedName);
-      } else {
-        const mockRows = Array.from({ length: 5 }, (_, i) => ({
-          rowIndex: i + 2,
-          date: `2026-0${i+1}-01`,
-          name: selectedName,
-          type: i % 2 === 0 ? "Cash" : "Bank transfer",
-          amount: memberInfo ? memberInfo.perTabungan : 50000
-        }));
-        renderMemberHistory(mockRows);
       }
     }
 
@@ -944,27 +997,31 @@
       tbody.innerHTML = '';
 
       if (!rows || rows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">Belum ada riwayat setoran.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-notion-muted text-xs italic">Belum ada riwayat setoran.</td></tr>`;
         return;
       }
 
       rows.forEach((r, idx) => {
         const tr = document.createElement('tr');
-        const badgeColor = r.type === 'Cash' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800';
+        const badgeHTML = r.type === 'Cash' 
+          ? `<span class="bg-gray-100 border border-gray-200 text-gray-700 px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide">Cash</span>` 
+          : `<span class="bg-blue-50 border border-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide">Transfer</span>`;
+        
         const rowIdx = r.rowIndex || (idx + 2);
         
+        tr.className = "hover:bg-notion-hover/50 transition";
         tr.innerHTML = `
-          <td class="py-3 px-3 sm:py-4 sm:px-6 text-slate-600">${r.date}</td>
-          <td class="py-3 px-3 sm:py-4 sm:px-6 font-semibold">${r.name}</td>
-          <td class="py-3 px-3 sm:py-4 sm:px-6"><span class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs rounded-full font-semibold ${badgeColor}">${r.type}</span></td>
-          <td class="py-3 px-3 sm:py-4 sm:px-6 text-right font-bold text-slate-800">${formatRupiah(r.amount)}</td>
-          <td class="py-3 px-3 sm:py-4 sm:px-6 text-center">
-            <div class="flex items-center justify-center space-x-1.5">
-              <button onclick="openEditModal(${rowIdx}, '${r.date}', '${r.name}', '${r.type}', ${r.amount})" class="p-1.5 text-xs bg-amber-50 text-amber-700 rounded-md hover:bg-amber-100 transition" title="Edit Data">
-                <i class="fa-solid fa-pen-to-square"></i>
+          <td class="py-3 px-4 text-notion-muted whitespace-nowrap">${r.date}</td>
+          <td class="py-3 px-4 font-medium">${r.name}</td>
+          <td class="py-3 px-4">${badgeHTML}</td>
+          <td class="py-3 px-4 text-right font-medium">${formatRupiah(r.amount)}</td>
+          <td class="py-3 px-4 text-center">
+            <div class="flex items-center justify-center space-x-2">
+              <button onclick="openEditModal(${rowIdx}, '${r.date}', '${r.name}', '${r.type}', ${r.amount})" class="text-notion-muted hover:text-notion-text transition" title="Edit">
+                <i class="fa-solid fa-pen text-xs"></i>
               </button>
-              <button onclick="deleteSetoranItem(${rowIdx}, '${r.date}', '${r.name}', ${r.amount})" class="p-1.5 text-xs bg-rose-50 text-rose-700 rounded-md hover:bg-rose-100 transition" title="Hapus Data">
-                <i class="fa-solid fa-trash-can"></i>
+              <button onclick="deleteSetoranItem(${rowIdx}, '${r.date}', '${r.name}', ${r.amount})" class="text-notion-muted hover:text-notion-red transition" title="Hapus">
+                <i class="fa-regular fa-trash-can text-xs"></i>
               </button>
             </div>
           </td>
@@ -1006,52 +1063,39 @@
         google.script.run
           .withSuccessHandler(() => {
             btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> <span>Simpan</span>`;
+            btn.innerHTML = `Simpan`;
             closeEditModal();
-            showToast("Setoran berhasil diperbarui!", "success");
+            showToast("Data diperbarui!", "success");
             loadMemberDetail();
             google.script.run.withSuccessHandler(onDataLoaded).getDashboardData();
           })
           .withFailureHandler((err) => {
             btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> <span>Simpan</span>`;
-            showToast("Gagal mengedit data: " + err.message, "error");
+            btn.innerHTML = `Simpan`;
+            showToast(err.message, "error");
           })
           .updateSetoran(payload);
-      } else {
-        setTimeout(() => {
-          btn.disabled = false;
-          btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> <span>Simpan</span>`;
-          closeEditModal();
-          showToast("Demo Mode: Data berhasil diubah!", "success");
-        }, 800);
       }
     }
 
     function deleteSetoranItem(rowIndex, date, name, amount) {
-      if (!confirm(`Apakah Anda yakin ingin menghapus setoran ${name} sebesar ${formatRupiah(amount)} pada tanggal ${date}?`)) {
+      if (!confirm(`Hapus setoran ${name} sejumlah ${formatRupiah(amount)}?`)) {
         return;
       }
 
-      const payload = {
-        rowIndex: rowIndex,
-        date: date,
-        name: name
-      };
+      const payload = { rowIndex: rowIndex, date: date, name: name };
 
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler(() => {
-            showToast("Setoran berhasil dihapus!", "success");
+            showToast("Data dihapus", "success");
             loadMemberDetail();
             google.script.run.withSuccessHandler(onDataLoaded).getDashboardData();
           })
           .withFailureHandler((err) => {
-            showToast("Gagal menghapus data: " + err.message, "error");
+            showToast(err.message, "error");
           })
           .deleteSetoran(payload);
-      } else {
-        showToast("Demo Mode: Setoran berhasil dihapus!", "success");
       }
     }
 
@@ -1069,7 +1113,7 @@
       event.preventDefault();
       const btn = document.getElementById('btn-submit');
       btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Menyimpan...</span>`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...`;
 
       const payload = {
         date: document.getElementById('input-date').value,
@@ -1082,24 +1126,18 @@
         google.script.run
           .withSuccessHandler(() => {
             btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span>Simpan Setoran</span>`;
-            showToast("Setoran berhasil disimpan!", "success");
+            btn.innerHTML = `<i class="fa-solid fa-paper-plane text-xs"></i> <span>Simpan Data</span>`;
+            showToast("Setoran disimpan!", "success");
             document.getElementById('form-setoran').reset();
             document.getElementById('input-date').value = new Date().toISOString().substring(0, 10);
             google.script.run.withSuccessHandler(onDataLoaded).getDashboardData();
           })
           .withFailureHandler((err) => {
             btn.disabled = false;
-            btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span>Simpan Setoran</span>`;
-            showToast("Gagal menyimpan data: " + err.message, "error");
+            btn.innerHTML = `<i class="fa-solid fa-paper-plane text-xs"></i> <span>Simpan Data</span>`;
+            showToast(err.message, "error");
           })
           .addSetoran(payload);
-      } else {
-        setTimeout(() => {
-          btn.disabled = false;
-          btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span>Simpan Setoran</span>`;
-          showToast("Demo Mode: Setoran berhasil disimulasikan!", "success");
-        }, 1000);
       }
     }
 
@@ -1109,12 +1147,14 @@
       const msg = document.getElementById('toast-msg');
 
       msg.innerText = message;
+      
+      // Notion style toasts
       if (type === 'success') {
-        toast.className = "fixed bottom-4 right-4 sm:bottom-5 sm:right-5 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-lg shadow-lg text-white font-medium text-xs sm:text-sm flex items-center space-x-2 bg-emerald-600 transition-all z-50";
-        icon.className = "fa-solid fa-check-circle";
+        toast.className = "fixed bottom-4 right-4 sm:bottom-6 sm:right-6 px-4 py-3 rounded border shadow-lg font-medium text-sm flex items-center space-x-3 transition-all z-50 min-w-[250px] bg-white border-notion-border text-notion-text";
+        icon.className = "text-green-500 fa-solid fa-circle-check";
       } else {
-        toast.className = "fixed bottom-4 right-4 sm:bottom-5 sm:right-5 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-lg shadow-lg text-white font-medium text-xs sm:text-sm flex items-center space-x-2 bg-rose-600 transition-all z-50";
-        icon.className = "fa-solid fa-circle-exclamation";
+        toast.className = "fixed bottom-4 right-4 sm:bottom-6 sm:right-6 px-4 py-3 rounded border shadow-lg font-medium text-sm flex items-center space-x-3 transition-all z-50 min-w-[250px] bg-notion-red text-white border-red-600";
+        icon.className = "fa-solid fa-triangle-exclamation";
       }
 
       toast.classList.remove('hidden');
