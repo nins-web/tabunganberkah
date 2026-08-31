@@ -475,8 +475,65 @@
   </div>
 
   <script>
-    // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI (BERAKHIRAN /exec)
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec";
+    // --- MULAI KODE PENGHUBUNG GITHUB KE GOOGLE APPS SCRIPT ---
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHVhDaRMLgq_sbfoJjyBgZAyAU-KKdAIdjFyxlmD73i57pqD7lx0PZqTUdnEUqEOjeYA/exec"; // Backend URL yang diminta
+
+    if (typeof window.google === 'undefined') {
+      window.google = {
+        script: {
+          run: (function() {
+            let successHandler = null;
+            let failureHandler = null;
+
+            const runObj = {
+              withSuccessHandler: function(cb) {
+                successHandler = cb;
+                return proxyObj;
+              },
+              withFailureHandler: function(cb) {
+                failureHandler = cb;
+                return proxyObj;
+              }
+            };
+
+            const proxyObj = new Proxy(runObj, {
+              get: function(target, prop) {
+                if (prop in target) return target[prop];
+                
+                return function(...args) {
+                  const onSuccess = successHandler;
+                  const onFailure = failureHandler;
+                  successHandler = null; // Reset
+                  failureHandler = null; // Reset
+
+                  fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: prop, args: args })
+                  })
+                  .then(res => res.json())
+                  .then(data => {
+                    if (data && data.error) {
+                      if (onFailure) onFailure(new Error(data.error));
+                      else console.error("Error Server:", data.error);
+                    } else {
+                      if (onSuccess) onSuccess(data);
+                    }
+                  })
+                  .catch(err => {
+                    if (onFailure) onFailure(err);
+                    else console.error("Error Jaringan:", err);
+                  });
+                };
+              }
+            });
+
+            return proxyObj;
+          })()
+        }
+      };
+    }
+    // --- AKHIR KODE PENGHUBUNG ---
 
     let currentRole = null;
     let loggedMemberName = null;
@@ -496,37 +553,11 @@
       { name: "BU ANGGRI", perTabungan: 10000, total: 260000, count: 26 }
     ];
 
-    /**
-     * Helper Central REST API Call via Fetch
-     */
-    async function callApi(action, payload = {}) {
-      if (!SCRIPT_URL || SCRIPT_URL === "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
-        throw new Error("URL Web App belum diisi pada variabel SCRIPT_URL!");
-      }
-      payload.action = action;
-      
-      const response = await fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
-      
-      const result = await response.json();
-      if (result && result.error) {
-        throw new Error(result.error);
-      }
-      return result;
-    }
-
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('input-date').value = new Date().toISOString().substring(0, 10);
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
-        callApi('getDashboardData')
-          .then(onDataLoaded)
-          .catch(err => {
-            console.error(err);
-            populateLoginMemberDropdown();
-          });
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(onDataLoaded).getDashboardData();
       } else {
         populateLoginMemberDropdown();
       }
@@ -575,16 +606,14 @@
       const memberName = document.getElementById('login-member-select').value;
       const pin = document.getElementById('login-member-pin').value;
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
-        callApi('verifyPin', { name: memberName, pin: pin, role: 'anggota' })
-          .then(res => {
-            if (res && res.valid) {
-              initSession('anggota', memberName);
-            } else {
-              showToast("PIN Anggota salah!", "error");
-            }
-          })
-          .catch(err => showToast("Error login: " + err.message, "error"));
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(res => {
+          if (res.valid) {
+            initSession('anggota', memberName);
+          } else {
+            showToast("PIN Anggota salah!", "error");
+          }
+        }).verifyPin(memberName, pin, 'anggota');
       } else {
         if (pin === "1234" || pin === "") {
           initSession('anggota', memberName);
@@ -598,16 +627,14 @@
       e.preventDefault();
       const pin = document.getElementById('login-admin-pin').value;
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
-        callApi('verifyPin', { name: 'ADMIN', pin: pin, role: 'admin' })
-          .then(res => {
-            if (res && res.valid) {
-              initSession('admin', null);
-            } else {
-              showToast("PIN Admin salah!", "error");
-            }
-          })
-          .catch(err => showToast("Error login: " + err.message, "error"));
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(res => {
+          if (res.valid) {
+            initSession('admin', null);
+          } else {
+            showToast("PIN Admin salah!", "error");
+          }
+        }).verifyPin('ADMIN', pin, 'admin');
       } else {
         if (pin === "8888") {
           initSession('admin', null);
@@ -684,9 +711,9 @@
         currentPin: pin
       };
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
-        callApi('changeMemberName', payload)
-          .then(res => {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(res => {
             btn.disabled = false;
             btn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Simpan Nama</span>`;
             closeChangeNameModal();
@@ -697,13 +724,14 @@
             
             showToast("Nama Anda berhasil diubah!", "success");
             loadPortalData();
-            callApi('getDashboardData').then(onDataLoaded);
+            google.script.run.withSuccessHandler(onDataLoaded).getDashboardData();
           })
-          .catch(err => {
+          .withFailureHandler(err => {
             btn.disabled = false;
             btn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Simpan Nama</span>`;
             showToast("Gagal ubah nama: " + err.message, "error");
-          });
+          })
+          .changeMemberName(payload);
       } else {
         setTimeout(() => {
           btn.disabled = false;
@@ -747,19 +775,20 @@
         newPin: newPin
       };
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
-        callApi('changeMemberPin', payload)
-          .then(res => {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(res => {
             btn.disabled = false;
             btn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Simpan PIN</span>`;
             closeChangePinModal();
             showToast("PIN Anda berhasil diubah!", "success");
           })
-          .catch(err => {
+          .withFailureHandler(err => {
             btn.disabled = false;
             btn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Simpan PIN</span>`;
             showToast("Gagal ubah PIN: " + err.message, "error");
-          });
+          })
+          .changeMemberPin(payload);
       } else {
         setTimeout(() => {
           btn.disabled = false;
@@ -777,10 +806,8 @@
       document.getElementById('portal-total-saldo').innerText = formatRupiah(memberInfo ? memberInfo.total : 0);
       document.getElementById('portal-total-setoran').innerText = (memberInfo ? memberInfo.count : 0) + " Minggu";
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
-        callApi('getMemberDetails', { name: loggedMemberName })
-          .then(renderPortalHistory)
-          .catch(err => console.error(err));
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(renderPortalHistory).getMemberDetails(loggedMemberName);
       } else {
         const mockRows = Array.from({ length: 5 }, (_, i) => ({
           date: `2026-0${i+1}-01`,
@@ -898,10 +925,8 @@
       const totalVal = memberInfo ? memberInfo.total : 0;
       document.getElementById('member-total-val').innerText = formatRupiah(totalVal);
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
-        callApi('getMemberDetails', { name: selectedName })
-          .then(renderMemberHistory)
-          .catch(err => console.error(err));
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(renderMemberHistory).getMemberDetails(selectedName);
       } else {
         const mockRows = Array.from({ length: 5 }, (_, i) => ({
           rowIndex: i + 2,
@@ -977,21 +1002,22 @@
         amount: parseFloat(document.getElementById('edit-amount').value)
       };
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
-        callApi('updateSetoran', payload)
-          .then(() => {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(() => {
             btn.disabled = false;
             btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> <span>Simpan</span>`;
             closeEditModal();
             showToast("Setoran berhasil diperbarui!", "success");
             loadMemberDetail();
-            callApi('getDashboardData').then(onDataLoaded);
+            google.script.run.withSuccessHandler(onDataLoaded).getDashboardData();
           })
-          .catch(err => {
+          .withFailureHandler((err) => {
             btn.disabled = false;
             btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> <span>Simpan</span>`;
             showToast("Gagal mengedit data: " + err.message, "error");
-          });
+          })
+          .updateSetoran(payload);
       } else {
         setTimeout(() => {
           btn.disabled = false;
@@ -1013,14 +1039,17 @@
         name: name
       };
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
-        callApi('deleteSetoran', payload)
-          .then(() => {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(() => {
             showToast("Setoran berhasil dihapus!", "success");
             loadMemberDetail();
-            callApi('getDashboardData').then(onDataLoaded);
+            google.script.run.withSuccessHandler(onDataLoaded).getDashboardData();
           })
-          .catch(err => showToast("Gagal menghapus data: " + err.message, "error"));
+          .withFailureHandler((err) => {
+            showToast("Gagal menghapus data: " + err.message, "error");
+          })
+          .deleteSetoran(payload);
       } else {
         showToast("Demo Mode: Setoran berhasil dihapus!", "success");
       }
@@ -1049,21 +1078,22 @@
         amount: parseFloat(document.getElementById('input-amount').value)
       };
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
-        callApi('addSetoran', payload)
-          .then(() => {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(() => {
             btn.disabled = false;
             btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span>Simpan Setoran</span>`;
             showToast("Setoran berhasil disimpan!", "success");
             document.getElementById('form-setoran').reset();
             document.getElementById('input-date').value = new Date().toISOString().substring(0, 10);
-            callApi('getDashboardData').then(onDataLoaded);
+            google.script.run.withSuccessHandler(onDataLoaded).getDashboardData();
           })
-          .catch(err => {
+          .withFailureHandler((err) => {
             btn.disabled = false;
             btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span>Simpan Setoran</span>`;
             showToast("Gagal menyimpan data: " + err.message, "error");
-          });
+          })
+          .addSetoran(payload);
       } else {
         setTimeout(() => {
           btn.disabled = false;
