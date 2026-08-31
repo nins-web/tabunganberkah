@@ -476,7 +476,7 @@
 
   <script>
     // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI (BERAKHIRAN /exec)
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_HWyzAxn7DtzihV0mFXBY87KQuUia4TC5bIhk-m-e_IQahffA2tRCzAgOLFyAAY2usw/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec";
 
     let currentRole = null;
     let loggedMemberName = null;
@@ -500,7 +500,7 @@
      * Helper Central REST API Call via Fetch
      */
     async function callApi(action, payload = {}) {
-      if (!SCRIPT_URL || SCRIPT_URL === "https://script.google.com/macros/s/AKfycby_HWyzAxn7DtzihV0mFXBY87KQuUia4TC5bIhk-m-e_IQahffA2tRCzAgOLFyAAY2usw/exec") {
+      if (!SCRIPT_URL || SCRIPT_URL === "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
         throw new Error("URL Web App belum diisi pada variabel SCRIPT_URL!");
       }
       payload.action = action;
@@ -520,7 +520,7 @@
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById('input-date').value = new Date().toISOString().substring(0, 10);
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycby_HWyzAxn7DtzihV0mFXBY87KQuUia4TC5bIhk-m-e_IQahffA2tRCzAgOLFyAAY2usw/exec") {
+      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
         callApi('getDashboardData')
           .then(onDataLoaded)
           .catch(err => {
@@ -575,7 +575,7 @@
       const memberName = document.getElementById('login-member-select').value;
       const pin = document.getElementById('login-member-pin').value;
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycby_HWyzAxn7DtzihV0mFXBY87KQuUia4TC5bIhk-m-e_IQahffA2tRCzAgOLFyAAY2usw/exec") {
+      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
         callApi('verifyPin', { name: memberName, pin: pin, role: 'anggota' })
           .then(res => {
             if (res && res.valid) {
@@ -598,7 +598,7 @@
       e.preventDefault();
       const pin = document.getElementById('login-admin-pin').value;
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycby_HWyzAxn7DtzihV0mFXBY87KQuUia4TC5bIhk-m-e_IQahffA2tRCzAgOLFyAAY2usw/exec") {
+      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
         callApi('verifyPin', { name: 'ADMIN', pin: pin, role: 'admin' })
           .then(res => {
             if (res && res.valid) {
@@ -684,7 +684,7 @@
         currentPin: pin
       };
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycby_HWyzAxn7DtzihV0mFXBY87KQuUia4TC5bIhk-m-e_IQahffA2tRCzAgOLFyAAY2usw/exec") {
+      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
         callApi('changeMemberName', payload)
           .then(res => {
             btn.disabled = false;
@@ -747,7 +747,7 @@
         newPin: newPin
       };
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycby_HWyzAxn7DtzihV0mFXBY87KQuUia4TC5bIhk-m-e_IQahffA2tRCzAgOLFyAAY2usw/exec") {
+      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
         callApi('changeMemberPin', payload)
           .then(res => {
             btn.disabled = false;
@@ -777,7 +777,7 @@
       document.getElementById('portal-total-saldo').innerText = formatRupiah(memberInfo ? memberInfo.total : 0);
       document.getElementById('portal-total-setoran').innerText = (memberInfo ? memberInfo.count : 0) + " Minggu";
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycby_HWyzAxn7DtzihV0mFXBY87KQuUia4TC5bIhk-m-e_IQahffA2tRCzAgOLFyAAY2usw/exec") {
+      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
         callApi('getMemberDetails', { name: loggedMemberName })
           .then(renderPortalHistory)
           .catch(err => console.error(err));
@@ -898,7 +898,7 @@
       const totalVal = memberInfo ? memberInfo.total : 0;
       document.getElementById('member-total-val').innerText = formatRupiah(totalVal);
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycby_HWyzAxn7DtzihV0mFXBY87KQuUia4TC5bIhk-m-e_IQahffA2tRCzAgOLFyAAY2usw/exec") {
+      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
         callApi('getMemberDetails', { name: selectedName })
           .then(renderMemberHistory)
           .catch(err => console.error(err));
@@ -977,7 +977,7 @@
         amount: parseFloat(document.getElementById('edit-amount').value)
       };
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycby_HWyzAxn7DtzihV0mFXBY87KQuUia4TC5bIhk-m-e_IQahffA2tRCzAgOLFyAAY2usw/exec") {
+      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
         callApi('updateSetoran', payload)
           .then(() => {
             btn.disabled = false;
@@ -1013,7 +1013,7 @@
         name: name
       };
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycby_HWyzAxn7DtzihV0mFXBY87KQuUia4TC5bIhk-m-e_IQahffA2tRCzAgOLFyAAY2usw/exec") {
+      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
         callApi('deleteSetoran', payload)
           .then(() => {
             showToast("Setoran berhasil dihapus!", "success");
@@ -1049,7 +1049,7 @@
         amount: parseFloat(document.getElementById('input-amount').value)
       };
 
-      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycby_HWyzAxn7DtzihV0mFXBY87KQuUia4TC5bIhk-m-e_IQahffA2tRCzAgOLFyAAY2usw/exec") {
+      if (SCRIPT_URL && SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbzGRppTNJorHvU6HGoGOjh32D_vymwFZdUidefYRWoWuzLT3tiKhyo0ECmIisTLvMCV/exec") {
         callApi('addSetoran', payload)
           .then(() => {
             btn.disabled = false;
