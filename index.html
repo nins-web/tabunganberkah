@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tabungan Berkah</title>
   
+  <!-- Favicon (Icon Tab Browser) diganti ke TB Mini Logo -->
+  <link rel="icon" type="image/png" href="TB Mini Logo.png">
+  
   <!-- Google Fonts: Inter (Notion Style) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -60,7 +63,8 @@
     <div class="max-w-[400px] w-full space-y-8">
       
       <div class="text-center space-y-2">
-        <div class="text-5xl mb-4">🏦</div>
+        <!-- Logo di halaman Login -->
+        <img src="TB Mini Logo.png" alt="Logo Tabungan Berkah" class="w-24 h-24 mx-auto mb-4 object-contain" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2830/2830284.png';">
         <h1 class="text-2xl font-semibold text-notion-text">Tabungan Berkah</h1>
         <p class="text-sm text-notion-muted">Silakan masuk sesuai dengan hak akses Anda</p>
       </div>
@@ -113,9 +117,8 @@
       
       <!-- Workspace Selector -->
       <div class="px-4 py-4 border-b border-notion-border/50 hover:bg-notion-hover cursor-pointer transition flex items-center space-x-2">
-        <div class="w-5 h-5 rounded bg-white shadow-sm border border-notion-border flex items-center justify-center text-[10px]">
-          🏦
-        </div>
+        <!-- Logo di Sidebar Workspace -->
+        <img src="TB Mini Logo.png" alt="Logo" class="w-6 h-6 rounded object-contain" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2830/2830284.png';">
         <div class="flex-1 truncate font-medium text-sm">Tabungan Berkah</div>
         <i class="fa-solid fa-chevron-down text-xs text-notion-muted"></i>
       </div>
@@ -164,7 +167,8 @@
       <!-- Mobile Header -->
       <header class="md:hidden flex items-center justify-between p-3 border-b border-notion-border bg-notion-bg z-10">
         <div class="flex items-center space-x-2">
-          <span class="text-lg">🏦</span>
+          <!-- Logo di Header Mobile -->
+          <img src="TB Mini Logo.png" alt="Logo" class="w-6 h-6 object-contain" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2830/2830284.png';">
           <span class="font-medium text-sm">Tabungan Berkah</span>
         </div>
         <button onclick="logout()" class="text-notion-muted text-sm"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
@@ -534,7 +538,7 @@
 
   <script>
     // --- MULAI KODE PENGHUBUNG GITHUB KE GOOGLE APPS SCRIPT ---
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzHVhDaRMLgq_sbfoJjyBgZAyAU-KKdAIdjFyxlmD73i57pqD7lx0PZqTUdnEUqEOjeYA/exec"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwO6JWw3v1N-WCN285iVF2d8wf0M93QtEGxzZnrEwP6AJSbfbYU2k3HwTO7YctjALdBdg/exec"; 
 
     if (typeof window.google === 'undefined') {
       window.google = {
